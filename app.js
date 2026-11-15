@@ -3,6 +3,9 @@ const fields=["age","marital","education","langTest","langL","langR","langW","la
 function val(id){const e=$(id);return e?e.value:"";}
 function num(id){return parseFloat(val(id))||0;}
 const R=window.CRS_RULES;
+const DRAWS=(window.DRAWS&&window.DRAWS.cec&&window.DRAWS.cec.length)? window.DRAWS : {cec:[{date:"2026-10-15",round:449,cutoff:519,itas:2500}],updated:"2026-11-15",status:""};
+const LAST_CEC=DRAWS.cec[0];
+function fmtDate(iso){ const d=new Date(iso+"T00:00:00"); return isNaN(d.getTime())? iso : d.toLocaleDateString("en-CA",{month:"short",day:"numeric",year:"numeric"}); }
 const EDU_ORDER=R.eduOrder;
 const EDU_SINGLE=R.eduSingle;
 const EDU_SPOUSE=R.eduSpouse;
@@ -72,9 +75,14 @@ function render(){
   const r=compute(scenario);
   $("crsScore").textContent=r.total;
   $("crsBar").style.width=Math.min(100,Math.round(r.total/1270*100))+"%";
-  const gap=519-r.total;
+  const gap=LAST_CEC.cutoff-r.total;
   $("gapKpi").textContent=gap>0?gap:"0";
-  $("crsGap").textContent= gap>0 ? ("Out of 1,270 on the November 3, 2026 grid. You are "+gap+" points below the last CEC cutoff of 519.") : "Out of 1,270 on the November 3, 2026 grid. You are at or above the last CEC cutoff of 519.";
+  $("crsGap").textContent= gap>0 ? ("Out of 1,270 on the November 3, 2026 grid. You are "+gap+" points below the last CEC cutoff of "+LAST_CEC.cutoff+".") : "Out of 1,270 on the November 3, 2026 grid. You are at or above the last CEC cutoff of "+LAST_CEC.cutoff+".";
+  if($("lastCutoff")) $("lastCutoff").textContent=LAST_CEC.cutoff;
+  if($("lastCutoffMeta")) $("lastCutoffMeta").textContent=fmtDate(LAST_CEC.date)+(LAST_CEC.itas? ", "+LAST_CEC.itas.toLocaleString("en-CA")+" ITAs" : "");
+  if($("mobileScoreVal")) $("mobileScoreVal").textContent=r.total;
+  if($("mobileScoreGap")) $("mobileScoreGap").textContent= gap>0 ? gap+" below last CEC cutoff" : "at or above last CEC cutoff";
+  if($("progressBar")&&typeof DEFAULTS!=="undefined"){ const changed=fields.filter(f=>{ const e=$(f); return e && DEFAULTS[f]!==undefined && e.value!==DEFAULTS[f]; }).length; $("progressBar").style.width=Math.round(changed/fields.length*100)+"%"; if($("progressText")) $("progressText").textContent="Your score updates live as you fill the form. You have adjusted "+changed+" of "+fields.length+" fields from the sample profile. Nothing is saved unless you create an account below."; }
   $("breakdown").innerHTML=
    ((val("langTest")&&val("langTest")!=="clb")? "<tr><td>Converted to CLB / NCLC (L, R, W, S)</td><td>"+r.scores.join(", ")+"</td></tr>" : "")+
    "<tr><td>Age</td><td>"+r.coreAge+"</td></tr>"+
@@ -118,7 +126,7 @@ function render(){
   if(r.french===0) rec.push(["Consider French only as a long game", "NCLC 7+ adds up to 50 points and unlocks French draws at much lower cutoffs, but it is a multi-year lever for most English first speakers."]);
   rec.push(["Keep your profile document-true", "Your NOC duties, employment letters and ECA must all tell the same story. A score you cannot document is not a score."]);
   $("recommendations").innerHTML=rec.map(x=>"<li><b>"+x[0]+".</b> "+x[1]+"</li>").join("");
-  let outlook="<p>CEC cutoffs held a 507 to 523 band through 2026, with no general draws since April 2024. IRCC paused rounds from November 3, 2026 to recalculate profiles under the new grid, and early estimates put the first post-pause CEC cutoffs higher than 519. Treat any forecast as a range, not a promise.</p>";
+  let outlook="<p>CEC cutoffs held a 507 to 523 band through 2026, with no general draws since April 2024. IRCC paused rounds from November 3, 2026 to recalculate profiles under the new grid, and early estimates put the first post-pause CEC cutoffs higher than "+LAST_CEC.cutoff+". Treat any forecast as a range, not a promise.</p>";
   outlook+="<p>"+(gap>0?("At "+r.total+", you need a lever worth at least "+gap+" points to clear the last cutoff, and more if cutoffs rise after the pause. The language lever above is the only one on this page that clears that gap on its own, without an employer or a province."):"At "+r.total+", you sit above the last cutoff. Your job now is speed and accuracy: be ready to file a complete application inside the ITA window.")+"</p>";
   outlook+="<p>Age matters quietly: your age points start falling after 29, so every year of delay costs points that language gains then have to replace.</p>";
   $("outlook").innerHTML=outlook;
@@ -141,6 +149,7 @@ function applyTestUI(){
 $("langTest").addEventListener("change",()=>{ applyTestUI(); scenario={}; render(); });
 applyTestUI();
 $("marital").addEventListener("input",syncSpouseBlock); syncSpouseBlock();
+const DEFAULTS={}; fields.forEach(f=>{ const e=$(f); if(e) DEFAULTS[f]=e.value; });
 document.querySelectorAll("[data-scenario]").forEach(b=>b.addEventListener("click",()=>{
   const k=b.getAttribute("data-scenario");
   if(k==="clb9") scenario={langL:9,langR:9,langW:9,langS:9};
@@ -151,6 +160,10 @@ document.querySelectorAll("[data-scenario]").forEach(b=>b.addEventListener("clic
   render();
 }));
 render();
+
+if($("drawsTable")){ $("drawsTable").innerHTML=DRAWS.cec.map(x=>"<tr><td>"+fmtDate(x.date)+"</td><td>"+(x.round? "#"+x.round : "")+"</td><td>"+x.cutoff+"</td><td>"+(x.itas? x.itas.toLocaleString("en-CA") : "")+"</td></tr>").join(""); }
+if($("drawsNote")){ $("drawsNote").textContent="Source: IRCC rounds of invitations, checked "+fmtDate(DRAWS.updated)+". "+(DRAWS.status||"")+" No general all-program draws have been held since April 2024."; }
+if($("printBtn")){ $("printBtn").addEventListener("click",()=>window.print()); }
 
 let supa=null;
 try{ if(window.APP_CONFIG && window.APP_CONFIG.SUPABASE_URL.indexOf("http")===0){ supa=window.supabase.createClient(window.APP_CONFIG.SUPABASE_URL, window.APP_CONFIG.SUPABASE_ANON_KEY); } }catch(e){ supa=null; }

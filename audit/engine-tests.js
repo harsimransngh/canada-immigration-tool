@@ -7,6 +7,7 @@ const path = require("path");
 const root = path.join(__dirname, "..");
 const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
 const rules = fs.readFileSync(path.join(root, "rules.js"), "utf8");
+const draws = fs.readFileSync(path.join(root, "draws.js"), "utf8");
 const appjs = fs.readFileSync(path.join(root, "app.js"), "utf8");
 
 // --- DOM stub built from the real form ---
@@ -26,7 +27,7 @@ while ((m = re.exec(html))) {
 }
 global.document = { getElementById: id => elements[id] || null, querySelectorAll: () => [], addEventListener() {} };
 global.window = {}; global.localStorage = { getItem: () => null, setItem() {}, removeItem() {} };
-eval(rules);
+eval(rules); eval(draws);
 const engineSrc = appjs.split("let scenario")[0];
 eval(engineSrc);
 function setForm(obj) { for (const k in obj) { if (elements[k]) elements[k].value = String(obj[k]); } }
@@ -83,8 +84,14 @@ for (const age of [18, 25, 30, 40, 50]) for (const edu of ["none", "bachelor", "
 checkTrue("caps hold across sweep (total <= 1270, transfer <= 100)", caps);
 check("PNP adds exactly 600 when no other additional points", total({ pnp: 600, canEdu: 0 }) - total({ pnp: 0, canEdu: 0 }), 600);
 
+// --- Draws data checks ---
+const D = global.window.DRAWS;
+checkTrue("draws: latest CEC is Oct 15 2026 at 519", !!D && D.cec[0].cutoff === 519 && D.cec[0].date === "2026-10-15");
+checkTrue("draws: CEC rounds in descending date order", !!D && D.cec.every((x, i) => i === 0 || D.cec[i - 1].date > x.date));
+checkTrue("draws: all CEC cutoffs plausible (400-600)", !!D && D.cec.every(x => x.cutoff >= 400 && x.cutoff <= 600));
+
 // --- Full app smoke test (catches render crashes like the first release bug) ---
-global.window = {}; eval(rules);
+global.window = {}; eval(rules); eval(draws);
 let smoke = "PASS";
 try { eval(appjs); if (!String(elements.crsScore.textContent).match(/^\d+$/)) smoke = "FAIL score not numeric"; }
 catch (e) { smoke = "FAIL " + e.message; }

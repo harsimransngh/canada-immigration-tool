@@ -33,6 +33,22 @@ ol,ul{margin:6px 0 6px 18px;padding:0}li{margin:5px 0}
 .kpi{background:#f0f4f7;border-radius:10px;padding:10px}.kpi b{font-size:20px;display:block}
 footer{max-width:1080px;margin:0 auto;padding:10px 20px 34px;color:var(--muted);font-size:13px}
 a{color:#0b5cad}
+.steps{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.steps a{flex:1;min-width:110px;text-align:center;background:#f0f4f7;border:1px solid var(--line);border-radius:8px;padding:8px 6px;font-size:13px;font-weight:700;color:var(--dark);text-decoration:none}
+.stephead{margin:18px 0 2px;font-size:15px;color:var(--dark);border-top:1px solid var(--line);padding-top:14px}
+.progress{height:8px;background:#edf1f4;border-radius:99px;overflow:hidden;margin:6px 0 2px}
+.progress i{display:block;height:100%;background:var(--good)}
+#mobileScore{display:none}
+@media(max-width:860px){#mobileScore{display:flex;justify-content:space-between;gap:10px;position:sticky;top:0;z-index:5;background:var(--dark);color:#fff;padding:10px 16px;font-weight:700;font-size:15px}}
+#printHead{display:none}
+@media print{
+ header,#mobileScore,.steps,button{display:none !important}
+ section[aria-label="Your profile"],section[aria-label="Save your profile"]{display:none !important}
+ .grid{grid-template-columns:1fr}
+ body{background:#fff} main{padding:0}
+ #printHead{display:block;margin-bottom:12px}
+ .card{border:0;padding:6px 0;margin-bottom:10px}
+}
 </style>
 </head>
 <body>
@@ -41,10 +57,18 @@ a{color:#0b5cad}
 <p>Simulate your profile on the CRS grid in force since November 3, 2026. Get a full points breakdown, pathway eligibility, what-if scenarios, ranked recommendations and a future outlook. Free, no account needed to simulate.</p>
 <p style="font-size:13px;margin-top:8px">Independent tool. Not affiliated with IRCC or the Government of Canada.</p>
 </div></header>
+<div id="mobileScore" aria-live="polite"><span>Estimated CRS <span id="mobileScoreVal">496</span></span><span id="mobileScoreGap"></span></div>
 <main>
+<div id="printHead"><h1>Canada Immigration Tool: CRS report</h1><p>Independent planning estimate. Not affiliated with IRCC or the Government of Canada. Your official score is the one IRCC calculates inside your Express Entry profile.</p></div>
 <div class="grid">
 <section class="card" aria-label="Your profile">
 <h2>Your profile</h2>
+<nav class="steps" aria-label="Profile steps">
+<a href="#step1">1. Profile</a><a href="#step2">2. Language</a><a href="#step3">3. Work</a><a href="#step4">4. Extras and dates</a>
+</nav>
+<div class="progress" role="progressbar" aria-label="Profile completion"><i id="progressBar" style="width:0%"></i></div>
+<p class="note" id="progressText">Your score updates live as you fill the form. Nothing is saved unless you create an account below.</p>
+<h3 class="stephead" id="step1">Step 1 of 4: Profile</h3>
 <div class="row">
 <div><label for="age">Age</label><input id="age" type="number" step="1" min="17" max="60" value="28"></div>
 <div><label for="marital">Marital status</label><select id="marital"><option value="single" selected>Single / never married</option><option value="married_nonacc">Married / common-law, spouse NOT accompanying</option><option value="married_acc">Married / common-law, spouse accompanying</option></select></div>
@@ -70,6 +94,7 @@ a{color:#0b5cad}
 <option value="bachelor">Bachelor degree (3+ years)</option><option value="twoplus">Two or more credentials (one 3+ years)</option>
 <option value="master" selected>Master degree / professional degree</option><option value="phd">PhD</option>
 </select>
+<h3 class="stephead" id="step2">Step 2 of 4: Language</h3>
 <label for="langTest">First official language test</label>
 <select id="langTest">
 <option value="clb" selected>Enter CLB / NCLC directly</option>
@@ -88,7 +113,7 @@ a{color:#0b5cad}
 <div><label for="langW">Writing</label><input id="langW" type="number" step="1" min="0" max="12" value="7"></div>
 <div><label for="langS">Speaking</label><input id="langS" type="number" step="1" min="0" max="12" value="7"></div>
 </div>
-<p class="note">Enter CELPIP scores directly (they map 1 to 1 to CLB at 7 and above for this estimate). For IELTS, use your CLB equivalent per skill.</p>
+<p class="note">Enter the scores exactly as they appear on your test report. The converter above handles the rest.</p>
 <label>Second official language scores, if any (CLB per skill)</label>
 <div class="row4">
 <div><label for="lang2L">Listening</label><input id="lang2L" type="number" step="1" min="0" max="12" value="0"></div>
@@ -96,6 +121,7 @@ a{color:#0b5cad}
 <div><label for="lang2W">Writing</label><input id="lang2W" type="number" step="1" min="0" max="12" value="0"></div>
 <div><label for="lang2S">Speaking</label><input id="lang2S" type="number" step="1" min="0" max="12" value="0"></div>
 </div>
+<h3 class="stephead" id="step3">Step 3 of 4: Work</h3>
 <div class="row">
 <div><label for="canWork">Canadian skilled work (years)</label><select id="canWork"><option value="0">None</option><option value="1" selected>1 year</option><option value="2">2 years</option><option value="3">3 years</option><option value="4">4 years</option><option value="5">5+ years</option></select></div>
 <div><label for="foreignWork">Foreign skilled work (years)</label><select id="foreignWork"><option value="0">None</option><option value="1">1 to 2 years</option><option value="3" selected>3+ years</option></select></div>
@@ -111,6 +137,7 @@ a{color:#0b5cad}
 <div><label for="wageBonus">Canadian work in a listed high-wage occupation, 12+ months</label><select id="wageBonus"><option value="0" selected>No / not listed</option><option value="20">At 1.3x the median wage (20 pts)</option><option value="40">At 1.5x the median wage (40 pts)</option><option value="70">At 2x the median wage (70 pts)</option></select></div>
 <div><label for="certQual">Certificate of qualification (trades, issued in Canada)</label><select id="certQual"><option value="0" selected>No</option><option value="1">Yes</option></select></div>
 </div>
+<h3 class="stephead" id="step4">Step 4 of 4: Extras and dates</h3>
 <div class="row">
 <div><label for="canEdu">Canadian postsecondary credential</label><select id="canEdu"><option value="0">None</option><option value="15" selected>1 to 2 years (15 pts)</option><option value="30">3+ years (30 pts)</option></select></div>
 <div><label for="nocTeer">Your NOC TEER category</label><select id="nocTeer"><option value="1">TEER 0 / 1</option><option value="2" selected>TEER 2 / 3</option><option value="4">TEER 4 / 5</option></select></div>
@@ -138,7 +165,7 @@ a{color:#0b5cad}
 <p class="sub" id="crsGap">Out of 1,270 on the November 3, 2026 grid.</p>
 <div class="bar"><i id="crsBar" style="width:39%"></i></div>
 <div class="kpis">
-<div class="kpi"><span class="sub">Last CEC cutoff</span><b>519</b><span class="small">Oct 15, 2026, 2,500 ITAs</span></div>
+<div class="kpi"><span class="sub">Last CEC cutoff</span><b id="lastCutoff">519</b><span class="small" id="lastCutoffMeta">Oct 15, 2026, 2,500 ITAs</span></div>
 <div class="kpi"><span class="sub">2026 CEC range</span><b>507 to 523</b><span class="small">18 rounds in 2026</span></div>
 <div class="kpi"><span class="sub">Gap to last cutoff</span><b id="gapKpi">23</b><span class="small">points</span></div>
 </div>
@@ -146,6 +173,7 @@ a{color:#0b5cad}
 <table><tbody id="breakdown"></tbody></table>
 <p class="note">Estimate only, for planning. Your official score is the one IRCC calculates inside your Express Entry profile. Rules checked November 15, 2026 against IRCC CRS criteria in force since November 3, 2026.</p>
 <p class="note">Score differs from your IRCC profile? <a href="https://github.com/harsimransngh/canada-immigration-tool/issues/new?title=Score%20mismatch%20report&body=My%20IRCC%20profile%20shows%3A%20%0AThis%20tool%20shows%3A%20%0AThe%20factor%20that%20differs%3A%20" target="_blank" rel="noopener">Report a mismatch</a>. Reports become test cases that keep the tool honest.</p>
+<button type="button" id="printBtn">Print or save PDF report</button>
 <h3>What-if scenarios</h3>
 <div id="scenarios"></div>
 <button type="button" class="alt" data-scenario="clb9">All language skills to CLB 9</button>
@@ -202,7 +230,9 @@ a{color:#0b5cad}
 <tr><td>French language</td><td></td><td>382 to 435</td><td></td></tr>
 <tr><td>Category draws (trades, transport, healthcare, others)</td><td></td><td>169 to 477</td><td>Oct 28, 2026: Transport, 477, 150 ITAs</td></tr>
 </tbody></table>
-<p class="note">Source: IRCC rounds of invitations, data through October 28, 2026, checked November 15, 2026. IRCC paused rounds from November 3, 2026 while profiles were recalculated under the new grid, so cutoffs after the pause may not compare directly with these. No general all-program draws have been held since April 2024.</p>
+<h3>Recent CEC rounds</h3>
+<table><thead><tr><th>Date</th><th>Round</th><th>Cutoff</th><th>Invitations</th></tr></thead><tbody id="drawsTable"></tbody></table>
+<p class="note" id="drawsNote">Source: IRCC rounds of invitations, checked November 15, 2026. No general all-program draws have been held since April 2024.</p>
 </section>
 </main>
 <footer>
@@ -212,6 +242,7 @@ a{color:#0b5cad}
 <script src="config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.min.js" integrity="sha384-gnyZit14c5lnGcarmA166QQjjJXpucw25ogZXuwH3HxxY904zHkBqmxVpelsPorb" crossorigin="anonymous"></script>
 <script src="rules.js"></script>
+<script src="draws.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

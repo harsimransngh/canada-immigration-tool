@@ -8,6 +8,7 @@ const path = require("path");
 const root = path.join(__dirname, "..");
 const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
 const rules = fs.readFileSync(path.join(root, "rules.js"), "utf8");
+const draws = fs.readFileSync(path.join(root, "draws.js"), "utf8");
 const appjs = fs.readFileSync(path.join(root, "app.js"), "utf8");
 
 // ---------- DOM stub + form model ----------
@@ -28,7 +29,7 @@ while ((m = re.exec(html))) {
 }
 global.document = { getElementById: id => elements[id] || null, querySelectorAll: () => [], addEventListener() {} };
 global.window = {}; global.localStorage = { getItem: () => null, setItem() {}, removeItem() {} };
-eval(rules);
+eval(rules); eval(draws);
 const R = global.window.CRS_RULES;
 eval(appjs.split("let scenario")[0]);
 
@@ -110,7 +111,7 @@ for (let i = 0; i < 20000; i++) {
 checkTrue("monotonicity fuzz 20k: +1 CLB in any skill never lowers total", monoBad === 0);
 
 // ---------- 5. DOM chaos: random mutations through the real render path ----------
-global.window = {}; eval(rules);
+global.window = {}; eval(rules); eval(draws);
 let domBad = "";
 try {
   eval(appjs);
