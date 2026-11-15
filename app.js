@@ -1,49 +1,66 @@
 const $=id=>document.getElementById(id);
-const fields=["age","marital","education","langL","langR","langW","langS","lang2L","lang2R","lang2W","lang2S","canWork","foreignWork","wageBonus","certQual","canEdu","nocTeer","frenchNCLC","sibling","pnp","offer","relocate","testDate","permitDate","funds","spouseEdu","spouseLangL","spouseLangR","spouseLangW","spouseLangS","spouseCanWork"];
+const fields=["age","marital","education","langTest","langL","langR","langW","langS","lang2L","lang2R","lang2W","lang2S","canWork","foreignWork","canWorkMonths","canWorkHours","foreignWorkMonths","foreignWorkHours","wageBonus","certQual","canEdu","nocTeer","frenchNCLC","sibling","pnp","offer","relocate","testDate","permitDate","funds","spouseEdu","spouseLangL","spouseLangR","spouseLangW","spouseLangS","spouseCanWork"];
 function val(id){const e=$(id);return e?e.value:"";}
 function num(id){return parseFloat(val(id))||0;}
-const EDU_ORDER=["none","hs","one","two","bachelor","twoplus","master","phd"];
-const EDU_SINGLE=[0,30,90,98,120,128,135,150];
-const EDU_SPOUSE=[0,28,84,91,112,119,126,140];
-function clbPoints(score,spouse){ const s=Math.floor(score); if(spouse){ if(s>=10)return 32; if(s===9)return 29; if(s===8)return 22; if(s===7)return 16; if(s===6)return 8; if(s>=4)return 6; return 0; } if(s>=10)return 34; if(s===9)return 31; if(s===8)return 23; if(s===7)return 17; if(s===6)return 9; if(s>=4)return 6; return 0; }
-function secondLangPoints(score){ const s=Math.floor(score); if(s>=9)return 6; if(s>=7)return 3; if(s>=5)return 1; return 0; }
-function spouseLangPoints(score){ const s=Math.floor(score); if(s>=9)return 5; if(s>=7)return 3; if(s>=5)return 1; return 0; }
-function agePoints(a,spouse){ if(a<=17)return 0; if(spouse){ if(a===18)return 90; if(a===19)return 95; if(a>=20&&a<=29)return 100; if(a===30)return 95; if(a===31)return 90; if(a===32)return 85; if(a===33)return 80; if(a===34)return 75; if(a===35)return 70; if(a===36)return 65; if(a===37)return 60; if(a===38)return 55; if(a===39)return 50; if(a===40)return 45; if(a===41)return 35; if(a===42)return 25; if(a===43)return 15; if(a===44)return 5; return 0; } if(a===18)return 99; if(a===19)return 105; if(a>=20&&a<=29)return 110; if(a===30)return 105; if(a===31)return 99; if(a===32)return 94; if(a===33)return 88; if(a===34)return 83; if(a===35)return 77; if(a===36)return 72; if(a===37)return 66; if(a===38)return 61; if(a===39)return 55; if(a===40)return 50; if(a===41)return 39; if(a===42)return 28; if(a===43)return 17; if(a===44)return 6; return 0; }
-function canWorkPoints(y,spouse){ return spouse? ({0:0,1:35,2:46,3:56,4:63,5:70})[y]||0 : ({0:0,1:40,2:53,3:64,4:72,5:80})[y]||0; }
+const R=window.CRS_RULES;
+const EDU_ORDER=R.eduOrder;
+const EDU_SINGLE=R.eduSingle;
+const EDU_SPOUSE=R.eduSpouse;
+function clbLookup(table,score){ const c=Math.max(0,Math.min(12,Math.floor(score)||0)); return table[c]; }
+function clbPoints(score,spouse){ return clbLookup(spouse?R.langFirstSpouse:R.langFirstSingle, score); }
+function secondLangPoints(score){ return clbLookup(R.langSecond, score); }
+function spouseLangPoints(score){ return clbLookup(R.spouseLang, score); }
+function agePoints(a,spouse){ const t=spouse?R.ageSpouse:R.ageSingle; return (a>=0&&a<t.length)? t[a] : 0; }
+function canWorkPoints(y,spouse){ const t=spouse?R.canWorkSpouse:R.canWorkSingle; const i=Math.max(0,Math.min(5,Math.floor(y)||0)); return t[i]; }
+const SKILLS=["listening","reading","writing","speaking"];
+const LANG_IDS=["langL","langR","langW","langS"];
+function convertScore(test, skill, raw){
+  const v=parseFloat(raw)||0;
+  if(!test||test==="clb"||test==="celpip"){ return Math.max(0, Math.min(12, Math.floor(v))); }
+  const table=(R.conversions[test]||{})[skill]; if(!table) return 0;
+  const levels=Object.keys(table).map(Number).sort((a,b)=>b-a);
+  for(const lvl of levels){ if(v>=table[lvl]) return lvl; }
+  return 0;
+}
 function compute(overrides){
   const get=(id,def)=> (overrides&&id in overrides)? overrides[id] : (["age","langL","langR","langW","langS","lang2L","lang2R","lang2W","lang2S","funds","spouseLangL","spouseLangR","spouseLangW","spouseLangS"].includes(id)? num(id) : val(id));
   const marriedAcc=get("marital")==="married_acc";
   const age=Math.floor(parseFloat(get("age"))||0);
   const eduIdx=Math.max(0, EDU_ORDER.indexOf(get("education")));
   const edu=(marriedAcc?EDU_SPOUSE:EDU_SINGLE)[eduIdx];
-  const scores=[parseFloat(get("langL"))||0,parseFloat(get("langR"))||0,parseFloat(get("langW"))||0,parseFloat(get("langS"))||0];
+  const langTest=get("langTest");
+  const scores=SKILLS.map((sk,i)=>{ const v=parseFloat(get(LANG_IDS[i]))||0; return (overrides && LANG_IDS[i] in overrides) ? Math.max(0,Math.min(12,Math.floor(v))) : convertScore(langTest, sk, v); });
   const langPts=scores.reduce((s,x)=>s+clbPoints(x,marriedAcc),0);
   const scores2=[parseFloat(get("lang2L"))||0,parseFloat(get("lang2R"))||0,parseFloat(get("lang2W"))||0,parseFloat(get("lang2S"))||0];
-  const lang2Pts=Math.min(marriedAcc?22:24, scores2.reduce((s,x)=>s+secondLangPoints(x),0));
-  const canY=parseFloat(get("canWork"))||0;
+  const lang2Pts=Math.min(marriedAcc?R.meta.caps.secondLangSpouse:R.meta.caps.secondLangSingle, scores2.reduce((s,x)=>s+secondLangPoints(x),0));
+  const canMonths=parseFloat(get("canWorkMonths"))||0, canHours=parseFloat(get("canWorkHours"))||30;
+  const canY= canMonths>0 ? Math.min(5, Math.floor((canMonths/12)*(Math.min(canHours,30)/30))) : (parseFloat(get("canWork"))||0);
   const workLength=canWorkPoints(canY,marriedAcc);
   const wageBonus=canY>=1? (parseFloat(get("wageBonus"))||0) : 0;
   const workRoute=workLength+wageBonus;
   const offerRoute=parseFloat(get("offer"))||0;
-  const lmi=Math.min(marriedAcc?140:150, Math.max(workRoute, offerRoute));
+  const lmi=Math.min(marriedAcc?R.meta.caps.lmiSpouse:R.meta.caps.lmiSingle, Math.max(workRoute, offerRoute));
   const coreAge=agePoints(age,marriedAcc);
   const core=coreAge+edu+langPts+lang2Pts+lmi;
   let spousePts=0, spEdu=0, spLang=0, spWork=0;
   if(marriedAcc){ spEdu=parseFloat(get("spouseEdu"))||0; spLang=[parseFloat(get("spouseLangL"))||0,parseFloat(get("spouseLangR"))||0,parseFloat(get("spouseLangW"))||0,parseFloat(get("spouseLangS"))||0].reduce((s,x)=>s+spouseLangPoints(x),0); spWork=parseFloat(get("spouseCanWork"))||0; spousePts=spEdu+spLang+spWork; }
   const allCLB7=scores.every(x=>Math.floor(x)>=7), allCLB9=scores.every(x=>Math.floor(x)>=9), allCLB5=scores.every(x=>Math.floor(x)>=5);
   const isTopTier=["twoplus","master","phd"].includes(get("education")), isPostSec=eduIdx>=2;
-  let g1a=0; if(isPostSec&&allCLB7) g1a=isTopTier?25:13; if(isPostSec&&allCLB9) g1a=isTopTier?50:25;
-  let g1b=0; if(isPostSec&&canY>=1) g1b=isTopTier?25:13; if(isPostSec&&canY>=2) g1b=isTopTier?50:25;
-  const g1=Math.min(50, g1a+g1b);
-  const fY=parseFloat(get("foreignWork"))||0;
-  let g2a=0; if(fY>=1&&allCLB7) g2a=fY>=3?25:13; if(fY>=1&&allCLB9) g2a=fY>=3?50:25;
-  let g2b=0; if(fY>=1&&canY>=1) g2b=fY>=3?25:13; if(fY>=1&&canY>=2) g2b=fY>=3?50:25;
-  const g2=Math.min(50, g2a+g2b);
-  const certPts=(get("certQual")==="1")? (allCLB7?50 : (allCLB5?25:0)) : 0;
-  const transferFinal=Math.min(100, g1+g2+certPts);
+  const T=R.transfer;
+  let g1a=0; if(isPostSec&&allCLB7) g1a=(isTopTier?T.eduLangTop:T.eduLangLow)[0]; if(isPostSec&&allCLB9) g1a=(isTopTier?T.eduLangTop:T.eduLangLow)[1];
+  let g1b=0; if(isPostSec&&canY>=1) g1b=(isTopTier?T.eduWorkTop:T.eduWorkLow)[0]; if(isPostSec&&canY>=2) g1b=(isTopTier?T.eduWorkTop:T.eduWorkLow)[1];
+  const g1=Math.min(T.groupCap, g1a+g1b);
+  const fMonths=parseFloat(get("foreignWorkMonths"))||0, fHours=parseFloat(get("foreignWorkHours"))||30;
+  const fEquiv= fMonths>0 ? (fMonths/12)*(Math.min(fHours,30)/30) : 0;
+  const fY= fMonths>0 ? (fEquiv>=3?3 : (fEquiv>=1?1:0)) : (parseFloat(get("foreignWork"))||0);
+  let g2a=0; if(fY>=1&&allCLB7) g2a=(fY>=3?T.foreignLang3:T.foreignLang12)[0]; if(fY>=1&&allCLB9) g2a=(fY>=3?T.foreignLang3:T.foreignLang12)[1];
+  let g2b=0; if(fY>=1&&canY>=1) g2b=(fY>=3?T.foreignWork3:T.foreignWork12)[0]; if(fY>=1&&canY>=2) g2b=(fY>=3?T.foreignWork3:T.foreignWork12)[1];
+  const g2=Math.min(T.groupCap, g2a+g2b);
+  const certPts=(get("certQual")==="1")? (allCLB7?T.cert[1] : (allCLB5?T.cert[0]:0)) : 0;
+  const transferFinal=Math.min(R.meta.caps.transferability, g1+g2+certPts);
   const canEdu=parseFloat(get("canEdu"))||0, sibling=parseFloat(get("sibling"))||0, pnp=parseFloat(get("pnp"))||0;
   const french=(get("frenchNCLC")==="1")? (allCLB5?50:25) : 0;
-  const additional=Math.min(600, canEdu+french+sibling+pnp);
+  const additional=Math.min(R.meta.caps.additional, canEdu+french+sibling+pnp);
   const total=core+spousePts+transferFinal+additional;
   return {total,core,coreAge,edu,langPts,lang2Pts,lmi,workRoute,offerRoute,spousePts,spEdu,spLang,spWork,transfer:transferFinal,g1,g2,certPts,additional,canEdu,french,sibling,pnp,offer:offerRoute,scores,canY,fY,allCLB7,allCLB9,allCLB5,marriedAcc};
 }
@@ -59,6 +76,7 @@ function render(){
   $("gapKpi").textContent=gap>0?gap:"0";
   $("crsGap").textContent= gap>0 ? ("Out of 1,270 on the November 3, 2026 grid. You are "+gap+" points below the last CEC cutoff of 519.") : "Out of 1,270 on the November 3, 2026 grid. You are at or above the last CEC cutoff of 519.";
   $("breakdown").innerHTML=
+   ((val("langTest")&&val("langTest")!=="clb")? "<tr><td>Converted to CLB / NCLC (L, R, W, S)</td><td>"+r.scores.join(", ")+"</td></tr>" : "")+
    "<tr><td>Age</td><td>"+r.coreAge+"</td></tr>"+
    "<tr><td>Education</td><td>"+r.edu+"</td></tr>"+
    "<tr><td>First language</td><td>"+r.langPts+"</td></tr>"+
@@ -112,6 +130,16 @@ function render(){
 }
 fields.forEach(f=>{ const e=$(f); if(e) e.addEventListener("input",()=>{scenario={};render();}); });
 function syncSpouseBlock(){ const b=$("spouseBlock"); if(b) b.style.display=(val("marital")==="married_acc")? "block":"none"; }
+function applyTestUI(){
+  const t=val("langTest")||"clb";
+  const cfg={ clb:{step:"1",max:[12,12,12,12]}, celpip:{step:"1",max:[12,12,12,12]},
+    ielts:{step:"0.5",max:[9,9,9,9]}, pte:{step:"1",max:[90,90,90,90]},
+    tef:{step:"1",max:[360,300,450,450]}, tcf:{step:"1",max:[699,699,20,20]} }[t] || {step:"1",max:[12,12,12,12]};
+  LANG_IDS.forEach((id,i)=>{ const el=$(id); if(el){ el.step=cfg.step; el.max=cfg.max[i]; el.min=0; } });
+  const note=$("tefNote"); if(note) note.style.display = t==="tef" ? "block" : "none";
+}
+$("langTest").addEventListener("change",()=>{ applyTestUI(); scenario={}; render(); });
+applyTestUI();
 $("marital").addEventListener("input",syncSpouseBlock); syncSpouseBlock();
 document.querySelectorAll("[data-scenario]").forEach(b=>b.addEventListener("click",()=>{
   const k=b.getAttribute("data-scenario");
@@ -131,5 +159,5 @@ $("signUpBtn").addEventListener("click",async()=>{ if(!supa) return refreshAuth(
 $("signInBtn").addEventListener("click",async()=>{ if(!supa) return refreshAuth(); const {error}=await supa.auth.signInWithPassword({email:val("email"),password:val("password")}); if(error){ $("authStatus").textContent=error.message; return; } refreshAuth(); });
 $("signOutBtn").addEventListener("click",async()=>{ if(supa) await supa.auth.signOut(); refreshAuth(); });
 $("saveBtn").addEventListener("click",async()=>{ if(!supa) return refreshAuth(); const {data}=await supa.auth.getSession(); if(!data.session){ $("saveStatus").textContent="Sign in first, then save."; return; } const r=compute({}); await supa.from("profiles").delete().eq("user_id",data.session.user.id); const {error}=await supa.from("profiles").insert({user_id:data.session.user.id, profile:currentProfile(), crs:r.total, label:"My profile"}); $("saveStatus").textContent=error? error.message : ("Saved. CRS "+r.total+"."); });
-$("loadBtn").addEventListener("click",async()=>{ if(!supa) return refreshAuth(); const {data,error}=await supa.from("profiles").select("*").order("created_at",{ascending:false}).limit(1); if(error){ $("saveStatus").textContent=error.message; return; } if(!data||!data.length){ $("saveStatus").textContent="No saved profile found yet."; return; } const p=data[0].profile; if(p.education && EDU_ORDER.indexOf(p.education)===-1){ const map={"0":"none","30":"hs","84":"one","90":"one","98":"two","120":"bachelor","128":"twoplus","135":"master","150":"phd"}; if(map[p.education]) p.education=map[p.education]; } if(p.french!==undefined && p.frenchNCLC===undefined){ p.frenchNCLC=(parseFloat(p.french)>0)?"1":"0"; } Object.keys(p).forEach(k=>{ if(fields.includes(k) && $(k)) $(k).value=p[k]; }); syncSpouseBlock(); scenario={}; render(); $("saveStatus").textContent="Loaded your most recent saved profile."; });
+$("loadBtn").addEventListener("click",async()=>{ if(!supa) return refreshAuth(); const {data,error}=await supa.from("profiles").select("*").order("created_at",{ascending:false}).limit(1); if(error){ $("saveStatus").textContent=error.message; return; } if(!data||!data.length){ $("saveStatus").textContent="No saved profile found yet."; return; } const p=data[0].profile; if(p.education && EDU_ORDER.indexOf(p.education)===-1){ const map={"0":"none","30":"hs","84":"one","90":"one","98":"two","120":"bachelor","128":"twoplus","135":"master","150":"phd"}; if(map[p.education]) p.education=map[p.education]; } if(p.french!==undefined && p.frenchNCLC===undefined){ p.frenchNCLC=(parseFloat(p.french)>0)?"1":"0"; } Object.keys(p).forEach(k=>{ if(fields.includes(k) && $(k)) $(k).value=p[k]; }); syncSpouseBlock(); applyTestUI(); scenario={}; render(); $("saveStatus").textContent="Loaded your most recent saved profile."; });
 refreshAuth();
