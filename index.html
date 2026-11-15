@@ -6,8 +6,9 @@
 <title>Canada Immigration Tool: CRS Simulator, Pathways, Outlook</title>
 <meta name="description" content="Simulate your Canadian immigration profile on the November 3, 2026 CRS grid. Get a points breakdown, pathway eligibility, what-if scenarios, ranked recommendations and a future outlook.">
 <style>
-:root{--red:#d80621;--dark:#17202a;--muted:#5b6b7a;--line:#dfe6ec;--bg:#f6f8fa;--card:#fff;--good:#137547;--warn:#b7791f;--bad:#b42318}
-*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--dark);background:var(--bg);line-height:1.5}
+:root{--red:#d80621;--dark:#26374a;--muted:#52616e;--line:#c9d3db;--field-border:#6f6f6f;--bg:#f6f8fa;--card:#fff;--good:#137547;--warn:#8a5a00;--bad:#b42318;--focus:#0535d2}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#17202a;background:var(--bg);line-height:1.5}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
 header{background:var(--dark);color:#fff;padding:28px 20px}header .wrap,main{max-width:1080px;margin:0 auto}
 h1{margin:0 0 6px;font-size:30px;line-height:1.15}header p{margin:0;color:#c8d3dd;max-width:760px}
 main{padding:20px}
@@ -15,7 +16,7 @@ main{padding:20px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
 .card h2{margin:0 0 10px;font-size:20px}.card h3{margin:16px 0 8px;font-size:16px}
 label{display:block;font-size:13px;font-weight:600;margin:10px 0 4px}
-input,select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:9px;font-size:15px;background:#fff}
+input,select{width:100%;padding:9px 10px;border:1px solid var(--field-border);border-radius:8px;font-size:16px;background:#fff}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.row4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 @media(max-width:560px){.row,.row4{grid-template-columns:1fr 1fr}}
 .score{font-size:52px;font-weight:800;line-height:1}.sub{color:var(--muted);font-size:14px}
@@ -23,7 +24,7 @@ input,select{width:100%;padding:9px 10px;border:1px solid var(--line);border-rad
 table{width:100%;border-collapse:collapse;font-size:14px}td,th{padding:7px 6px;border-bottom:1px solid var(--line);text-align:left}td:last-child,th:last-child{text-align:right;font-weight:700}
 .pill{display:inline-block;padding:2px 9px;border-radius:99px;font-size:12px;font-weight:700}
 .pass{background:#e3f4ea;color:var(--good)}.close{background:#fdf0d5;color:var(--warn)}.fail{background:#fde8e5;color:var(--bad)}
-button{background:var(--dark);color:#fff;border:0;border-radius:9px;padding:10px 14px;font-size:14px;font-weight:700;cursor:pointer;margin:4px 6px 4px 0}
+button{background:var(--dark);color:#fff;border:0;border-radius:8px;padding:12px 16px;min-height:44px;font-size:14px;font-weight:700;cursor:pointer;margin:4px 6px 4px 0}
 button.alt{background:#fff;color:var(--dark);border:1px solid var(--dark)}
 button.red{background:var(--red)}
 .note{font-size:13px;color:var(--muted)} .small{font-size:13px}
@@ -38,45 +39,71 @@ a{color:#0b5cad}
 <header><div class="wrap">
 <h1>Canada Immigration Tool</h1>
 <p>Simulate your profile on the CRS grid in force since November 3, 2026. Get a full points breakdown, pathway eligibility, what-if scenarios, ranked recommendations and a future outlook. Free, no account needed to simulate.</p>
+<p style="font-size:13px;margin-top:8px">Independent tool. Not affiliated with IRCC or the Government of Canada.</p>
 </div></header>
 <main>
 <div class="grid">
 <section class="card" aria-label="Your profile">
 <h2>Your profile</h2>
 <div class="row">
-<div><label for="age">Age</label><input id="age" type="number" min="17" max="60" value="28"></div>
-<div><label for="marital">Marital status</label><select id="marital"><option value="single" selected>Single / never married</option><option value="married">Married / common-law (spouse not accompanying in v1 scoring)</option></select></div>
+<div><label for="age">Age</label><input id="age" type="number" step="1" min="17" max="60" value="28"></div>
+<div><label for="marital">Marital status</label><select id="marital"><option value="single" selected>Single / never married</option><option value="married_nonacc">Married / common-law, spouse NOT accompanying</option><option value="married_acc">Married / common-law, spouse accompanying</option></select></div>
+</div>
+<div id="spouseBlock" style="display:none;border:1px dashed var(--field-border);border-radius:8px;padding:10px;margin-top:10px">
+<p class="small" style="margin:0 0 4px"><b>Spouse factors</b> (counted only when your spouse is accompanying)</p>
+<label for="spouseEdu">Spouse highest education</label>
+<select id="spouseEdu"><option value="0" selected>Less than high school</option><option value="2">High school</option><option value="6">One-year postsecondary</option><option value="7">Two-year postsecondary</option><option value="8">Bachelor degree</option><option value="9">Two or more credentials</option><option value="10">Master / professional degree or PhD</option></select>
+<label>Spouse first language scores (CLB per skill)</label>
+<div class="row4">
+<div><label for="spouseLangL">Listening</label><input id="spouseLangL" type="number" step="1" min="0" max="12" value="0"></div>
+<div><label for="spouseLangR">Reading</label><input id="spouseLangR" type="number" step="1" min="0" max="12" value="0"></div>
+<div><label for="spouseLangW">Writing</label><input id="spouseLangW" type="number" step="1" min="0" max="12" value="0"></div>
+<div><label for="spouseLangS">Speaking</label><input id="spouseLangS" type="number" step="1" min="0" max="12" value="0"></div>
+</div>
+<label for="spouseCanWork">Spouse Canadian skilled work</label>
+<select id="spouseCanWork"><option value="0" selected>None</option><option value="5">1 year</option><option value="7">2 years</option><option value="8">3 years</option><option value="9">4 years</option><option value="10">5+ years</option></select>
 </div>
 <label for="education">Highest education (with ECA if foreign)</label>
 <select id="education">
-<option value="0">Less than high school</option><option value="30">High school</option>
-<option value="84">One-year postsecondary</option><option value="98">Two-year postsecondary</option>
-<option value="120">Bachelor degree (3+ years)</option><option value="128">Two or more credentials (one 3+ years)</option>
-<option value="135" selected>Master degree / professional degree</option><option value="150">PhD</option>
+<option value="none">Less than high school</option><option value="hs">High school</option>
+<option value="one">One-year postsecondary</option><option value="two">Two-year postsecondary</option>
+<option value="bachelor">Bachelor degree (3+ years)</option><option value="twoplus">Two or more credentials (one 3+ years)</option>
+<option value="master" selected>Master degree / professional degree</option><option value="phd">PhD</option>
 </select>
 <label>First language test scores (CELPIP / IELTS converted to CLB by score band)</label>
 <div class="row4">
-<div><label for="langL">Listening</label><input id="langL" type="number" min="0" max="12" value="9"></div>
-<div><label for="langR">Reading</label><input id="langR" type="number" min="0" max="12" value="9"></div>
-<div><label for="langW">Writing</label><input id="langW" type="number" min="0" max="12" value="7"></div>
-<div><label for="langS">Speaking</label><input id="langS" type="number" min="0" max="12" value="7"></div>
+<div><label for="langL">Listening</label><input id="langL" type="number" step="1" min="0" max="12" value="9"></div>
+<div><label for="langR">Reading</label><input id="langR" type="number" step="1" min="0" max="12" value="9"></div>
+<div><label for="langW">Writing</label><input id="langW" type="number" step="1" min="0" max="12" value="7"></div>
+<div><label for="langS">Speaking</label><input id="langS" type="number" step="1" min="0" max="12" value="7"></div>
 </div>
 <p class="note">Enter CELPIP scores directly (they map 1 to 1 to CLB at 7 and above for this estimate). For IELTS, use your CLB equivalent per skill.</p>
+<label>Second official language scores, if any (CLB per skill)</label>
+<div class="row4">
+<div><label for="lang2L">Listening</label><input id="lang2L" type="number" step="1" min="0" max="12" value="0"></div>
+<div><label for="lang2R">Reading</label><input id="lang2R" type="number" step="1" min="0" max="12" value="0"></div>
+<div><label for="lang2W">Writing</label><input id="lang2W" type="number" step="1" min="0" max="12" value="0"></div>
+<div><label for="lang2S">Speaking</label><input id="lang2S" type="number" step="1" min="0" max="12" value="0"></div>
+</div>
 <div class="row">
 <div><label for="canWork">Canadian skilled work (years)</label><select id="canWork"><option value="0">None</option><option value="1" selected>1 year</option><option value="2">2 years</option><option value="3">3 years</option><option value="4">4 years</option><option value="5">5+ years</option></select></div>
 <div><label for="foreignWork">Foreign skilled work (years)</label><select id="foreignWork"><option value="0">None</option><option value="1">1 to 2 years</option><option value="3" selected>3+ years</option></select></div>
+</div>
+<div class="row">
+<div><label for="wageBonus">Canadian work in a listed high-wage occupation, 12+ months</label><select id="wageBonus"><option value="0" selected>No / not listed</option><option value="20">At 1.3x the median wage (20 pts)</option><option value="40">At 1.5x the median wage (40 pts)</option><option value="70">At 2x the median wage (70 pts)</option></select></div>
+<div><label for="certQual">Certificate of qualification (trades, issued in Canada)</label><select id="certQual"><option value="0" selected>No</option><option value="1">Yes</option></select></div>
 </div>
 <div class="row">
 <div><label for="canEdu">Canadian postsecondary credential</label><select id="canEdu"><option value="0">None</option><option value="15" selected>1 to 2 years (15 pts)</option><option value="30">3+ years (30 pts)</option></select></div>
 <div><label for="nocTeer">Your NOC TEER category</label><select id="nocTeer"><option value="1">TEER 0 / 1</option><option value="2" selected>TEER 2 / 3</option><option value="4">TEER 4 / 5</option></select></div>
 </div>
 <div class="row">
-<div><label for="french">French ability (second language)</label><select id="french"><option value="0" selected>None / below NCLC 7</option><option value="25">NCLC 7+ in all four, first language CLB 4 or less</option><option value="50">NCLC 7+ in all four, first language CLB 5+</option></select></div>
+<div><label for="frenchNCLC">French at NCLC 7+ in all four skills</label><select id="frenchNCLC"><option value="0" selected>No</option><option value="1">Yes (bonus tier set automatically from your first language scores)</option></select></div>
 <div><label for="sibling">Sibling in Canada (citizen / PR)</label><select id="sibling"><option value="0" selected>No</option><option value="15">Yes (15 pts)</option></select></div>
 </div>
 <div class="row">
 <div><label for="pnp">Provincial nomination</label><select id="pnp"><option value="0" selected>No</option><option value="600">Yes (600 pts)</option></select></div>
-<div><label for="offer">Job offer in a high-wage listed occupation (Nov 3, 2026 tiers)</label><select id="offer"><option value="0" selected>No offer / occupation not listed</option><option value="50">Listed at 1.3x median (50 pts)</option><option value="70">Listed at 1.5x median (70 pts)</option><option value="100">Listed at 2x median (100 pts)</option></select></div>
+<div><label for="offer">Job offer in a high-wage listed occupation (counts only if higher than your work route)</label><select id="offer"><option value="0" selected>No offer / occupation not listed</option><option value="50">Listed at 1.3x median (50 pts)</option><option value="70">Listed at 1.5x median (70 pts)</option><option value="100">Listed at 2x median (100 pts)</option></select></div>
 </div>
 <div class="row">
 <div><label for="relocate">Willing to relocate for RCIP / PNP</label><select id="relocate"><option value="yes" selected>Yes</option><option value="no">No</option></select></div>
@@ -88,8 +115,8 @@ a{color:#0b5cad}
 </div>
 </section>
 <section class="card" aria-label="Your result">
-<h2>Your CRS estimate</h2>
-<div class="score" id="crsScore">496</div>
+<h2>Your estimated CRS score</h2>
+<div class="score" id="crsScore" aria-live="polite">496</div>
 <p class="sub" id="crsGap">Out of 1,270 on the November 3, 2026 grid.</p>
 <div class="bar"><i id="crsBar" style="width:39%"></i></div>
 <div class="kpis">
@@ -104,7 +131,7 @@ a{color:#0b5cad}
 <div id="scenarios"></div>
 <button type="button" class="alt" data-scenario="clb9">All language skills to CLB 9</button>
 <button type="button" class="alt" data-scenario="clb10">All language skills to CLB 10</button>
-<button type="button" class="alt" data-scenario="can2">Add a 2nd year of Canadian work</button>
+<button type="button" class="alt" data-scenario="can2">Add a year of Canadian work</button>
 <button type="button" class="alt" data-scenario="pnp">Add a provincial nomination</button>
 <button type="button" class="alt" data-scenario="reset">Reset scenarios</button>
 </section>
@@ -161,125 +188,10 @@ a{color:#0b5cad}
 </main>
 <footer>
 <p><b>Disclaimer:</b> This tool is an unofficial planning estimate. It is not legal or immigration advice, and it is not affiliated with IRCC or the Government of Canada. Always confirm your score and eligibility in your official IRCC account and on canada.ca before making decisions.</p>
-<p>Built with the CRS criteria in force since November 3, 2026: CRS is scored out of 1,270, and a job offer in a listed high-wage occupation earns 50, 70 or 100 points under the Labour Market Integration factor, whichever is higher between that offer and your Canadian work experience points, not both added together for the same factor in this estimate beyond the tables shown.</p>
+<p>Built with the CRS criteria in force since November 3, 2026: CRS is scored out of 1,270. Under the Labour Market Integration factor, IRCC counts either your Canadian work experience route (length plus any high-wage occupation bonus) or a high-wage job offer at 50, 70 or 100 points, whichever is higher, never both added together.</p>
 </footer>
 <script src="config.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-const $=id=>document.getElementById(id);
-const fields=["age","marital","education","langL","langR","langW","langS","canWork","foreignWork","canEdu","nocTeer","french","sibling","pnp","offer","relocate","testDate","permitDate","funds"];
-function val(id){const e=$(id);return e?e.value:"";}
-function num(id){return parseFloat(val(id))||0;}
-function clbPoints(score){ if(score>=10)return 34; if(score===9)return 31; if(score===8)return 23; if(score===7)return 17; if(score===6)return 9; if(score===5)return 6; return 0; }
-function agePoints(a){ if(a<=17)return 0; if(a===18)return 99; if(a===19)return 105; if(a>=20&&a<=29)return 110; if(a===30)return 105; if(a===31)return 99; if(a===32)return 94; if(a===33)return 88; if(a===34)return 83; if(a===35)return 77; if(a===36)return 72; if(a===37)return 66; if(a===38)return 61; if(a===39)return 55; if(a===40)return 50; if(a===41)return 39; if(a===42)return 28; if(a===43)return 17; if(a===44)return 6; return 0; }
-function canWorkPoints(y){ return ({0:0,1:40,2:53,3:64,4:72,5:80})[y]||0; }
-function compute(overrides){
-  const get=(id,def)=> (overrides&&id in overrides)? overrides[id] : (["age","langL","langR","langW","langS","funds"].includes(id)? num(id) : val(id));
-  const age=parseFloat(get("age"))||0, edu=parseFloat(get("education"))||0;
-  const scores=[parseFloat(get("langL"))||0,parseFloat(get("langR"))||0,parseFloat(get("langW"))||0,parseFloat(get("langS"))||0];
-  const langPts=scores.reduce((s,x)=>s+clbPoints(x),0);
-  const canY=parseFloat(get("canWork"))||0, canPts=canWorkPoints(canY);
-  const coreAge=agePoints(age);
-  const core=coreAge+edu+langPts+canPts;
-  const allCLB7=scores.every(x=>x>=7), allCLB9=scores.every(x=>x>=9);
-  const isMasterPlus=edu>=135, isPostSec=edu>=84;
-  let g1a=0; if(isPostSec&&allCLB7) g1a=(isMasterPlus||edu===128)?25:13; if(isPostSec&&allCLB9) g1a=(isMasterPlus||edu===128)?50:25;
-  let g1b=0; if(isPostSec&&canY>=1) g1b=(isMasterPlus||edu===128)?25:13; if(isPostSec&&canY>=2) g1b=(isMasterPlus||edu===128)?50:25;
-  const group1=Math.min(50,g1a+g1b>50?Math.max(g1a,g1b)+Math.min(g1a,g1b):g1a+g1b); group1=Math.min(50, Math.max(g1a,g1b) + (Math.min(g1a,g1b)>0? Math.min(25,Math.min(g1a,g1b)):0));
-  const fY=parseFloat(get("foreignWork"))||0;
-  let g2a=0; if(fY>=1&&allCLB7) g2a=fY>=3?25:13; if(fY>=1&&allCLB9) g2a=fY>=3?50:25;
-  let g2b=0; if(fY>=1&&canY>=1) g2b=fY>=3?25:13; if(fY>=1&&canY>=2) g2b=fY>=3?50:25;
-  let group2=Math.min(50, Math.max(g2a,g2b) + (Math.min(g2a,g2b)>0? Math.min(25,Math.min(g2a,g2b)):0));
-  const transfer=Math.min(100,(Math.min(50,g1a===50||g1b===50?50:g1a+g1b>50?50:g1a+g1b)) + group2);
-  const transferFinal=Math.min(100, Math.min(50,g1a+g1b) + Math.min(50,g2a+g2b));
-  const canEdu=parseFloat(get("canEdu"))||0, french=parseFloat(get("french"))||0, sibling=parseFloat(get("sibling"))||0, pnp=parseFloat(get("pnp"))||0, offer=parseFloat(get("offer"))||0;
-  const additional=Math.min(600, canEdu+french+sibling+pnp+offer);
-  const total=core+transferFinal+additional;
-  return {total,core,coreAge,edu,langPts,canPts,transfer:transferFinal,g1:Math.min(50,g1a+g1b),g2:Math.min(50,g2a+g2b),additional,canEdu,french,sibling,pnp,offer,scores,canY,fY,allCLB7,allCLB9};
-}
-</script>
-<script>
-let scenario={};
-function currentProfile(){ const p={}; fields.forEach(f=>p[f]=val(f)); return p; }
-function daysUntil(dateStr){ if(!dateStr) return null; const now=new Date(); now.setHours(0,0,0,0); const d=new Date(dateStr+"T00:00:00"); return Math.round((d-now)/86400000); }
-function render(){
-  const r=compute(scenario);
-  $("crsScore").textContent=r.total;
-  $("crsBar").style.width=Math.min(100,Math.round(r.total/1270*100))+"%";
-  const gap=519-r.total;
-  $("gapKpi").textContent=gap>0?gap:"0";
-  $("crsGap").textContent= gap>0 ? ("Out of 1,270 on the November 3, 2026 grid. You are "+gap+" points below the last CEC cutoff of 519.") : "Out of 1,270 on the November 3, 2026 grid. You are at or above the last CEC cutoff of 519.";
-  $("breakdown").innerHTML=
-   "<tr><td>Age</td><td>"+r.coreAge+"</td></tr>"+
-   "<tr><td>Education</td><td>"+r.edu+"</td></tr>"+
-   "<tr><td>First language</td><td>"+r.langPts+"</td></tr>"+
-   "<tr><td>Canadian work experience</td><td>"+r.canPts+"</td></tr>"+
-   "<tr><td>Skill transferability: education group</td><td>"+r.g1+"</td></tr>"+
-   "<tr><td>Skill transferability: foreign work group</td><td>"+r.g2+"</td></tr>"+
-   "<tr><td>Additional: Canadian education</td><td>"+r.canEdu+"</td></tr>"+
-   "<tr><td>Additional: French bonus</td><td>"+r.french+"</td></tr>"+
-   "<tr><td>Additional: Sibling in Canada</td><td>"+r.sibling+"</td></tr>"+
-   "<tr><td>Additional: High-wage job offer tier</td><td>"+r.offer+"</td></tr>"+
-   "<tr><td>Additional: Provincial nomination</td><td>"+r.pnp+"</td></tr>"+
-   "<tr><td><b>Total</b></td><td>"+r.total+"</td></tr>";
-  const base=compute({});
-  const sc=[
-    ["All language to CLB 9", compute({langL:9,langR:9,langW:9,langS:9}).total],
-    ["All language to CLB 10", compute({langL:10,langR:10,langW:10,langS:10}).total],
-    ["Second year of Canadian work", compute({canWork:Math.min(5,(parseFloat(val("canWork"))||0)+1)}).total],
-    ["Provincial nomination", compute({pnp:600}).total],
-    ["French to NCLC 7+ (with CLB 5+ first language)", compute({french:50}).total]
-  ];
-  $("scenarios").innerHTML=sc.map(x=>"<p class='small'><b>"+x[0]+":</b> "+x[1]+" ("+(x[1]-base.total>=0?"+":"")+(x[1]-base.total)+" vs today)</p>").join("");
-  const rows=[];
-  const cec = r.canY>=1 && r.allCLB7;
-  rows.push(["Express Entry: CEC", cec?"pass":(r.canY>=1?"close":"fail"), cec?"1+ year Canadian skilled work and CLB 7+ in all skills.":"Needs 1+ year Canadian skilled work and CLB 7+ for TEER 2/3 roles."]);
-  const fsw = r.scores.every(x=>x>=7) && r.edu>=84 && (r.fY>=1||r.canY>=1);
-  rows.push(["Express Entry: FSW", fsw?"pass":"close", fsw?"Language, education and skilled work basics met in this estimate. Funds and the 67 point grid still need a full check.":"Check language CLB 7+, ECA, skilled work and settlement funds."]);
-  rows.push(["Category-based draws", (val("french")!=="0"||r.nocTeer==="2")?"close":"fail", "French speakers and listed occupation categories draw far below CEC cutoffs. French rounds in 2026: 382 to 435."]);
-  rows.push(["Provincial Nominee Program", r.pnp>0?"pass":"close", r.pnp>0?"Nomination adds 600 points.":"No nomination yet. A nomination is the single largest lever (+600) but is employer and province dependent."]);
-  const rc = val("relocate")==="yes" && (r.fY>=3||r.canY>=1);
-  rows.push(["RCIP (now a permanent program)", rc?"close":"fail", rc?"You meet the work experience base in this estimate. You still need a full-time, non-seasonal offer from a designated employer in a priority occupation, plus a community recommendation. Language needed: CLB 5 for TEER 2/3.":"Needs willingness to relocate, 1,560 hours of related work in the last 3 years, and a designated employer offer."]);
-  $("eligibility").innerHTML=rows.map(x=>"<tr><td>"+x[0]+"</td><td><span class='pill "+x[1]+"'>"+x[1].toUpperCase()+"</span></td><td>"+x[2]+"</td></tr>").join("");
-  const rec=[];
-  if(!r.allCLB9) rec.push(["Raise language to CLB 9 in every skill", "Worth about "+(compute({langL:9,langR:9,langW:9,langS:9}).total-base.total)+" points in your case, fully in your control, and it lifts transferability too. This is usually the fastest honest route over a CEC cutoff."]);
-  if(r.pnp===0) rec.push(["Chase a provincial nomination in parallel", "+600 points ends the CRS race, but it depends on a province and often an employer, so run it in parallel, never as your only plan."]);
-  if(rc) rec.push(["Test RCIP communities you would actually live in", "RCIP does not rank by CRS. A designated employer offer plus a community recommendation is a direct PR route, but only use it if you genuinely intend to live there."]);
-  if(r.french===0) rec.push(["Consider French only as a long game", "NCLC 7+ adds up to 50 points and unlocks French draws at much lower cutoffs, but it is a multi-year lever for most English first speakers."]);
-  rec.push(["Keep your profile document-true", "Your NOC duties, employment letters and ECA must all tell the same story. A score you cannot document is not a score."]);
-  $("recommendations").innerHTML=rec.map(x=>"<li><b>"+x[0]+".</b> "+x[1]+"</li>").join("");
-  let outlook="<p>CEC cutoffs held a 507 to 523 band through 2026, with no general draws since April 2024. IRCC paused rounds from November 3, 2026 to recalculate profiles under the new grid, and early estimates put the first post-pause CEC cutoffs higher than 519. Treat any forecast as a range, not a promise.</p>";
-  outlook+="<p>"+(gap>0?("At "+r.total+", you need a lever worth at least "+gap+" points to clear the last cutoff, and more if cutoffs rise after the pause. The language lever above is the only one on this page that clears that gap on its own, without an employer or a province."):"At "+r.total+", you sit above the last cutoff. Your job now is speed and accuracy: be ready to file a complete application inside the ITA window.")+"</p>";
-  outlook+="<p>Age matters quietly: your age points start falling after 29, so every year of delay costs points that language gains then have to replace.</p>";
-  $("outlook").innerHTML=outlook;
-  const cd=[];
-  const td=daysUntil(val("testDate")); if(td!==null) cd.push("Language test date: "+(td>=0? td+" days from now." : Math.abs(td)+" days ago. Results stay valid for 2 years."));
-  const pd=daysUntil(val("permitDate")); if(pd!==null) cd.push("Work permit expiry: "+pd+" days from now. Plan your status well before this date.");
-  cd.push("Language results expire 2 years after the test date. ECA reports are valid for 5 years for immigration.");
-  $("countdowns").innerHTML=cd.map(x=>"<li>"+x+"</li>").join("");
-}
-fields.forEach(f=>{ const e=$(f); if(e) e.addEventListener("input",()=>{scenario={};render();}); });
-document.querySelectorAll("[data-scenario]").forEach(b=>b.addEventListener("click",()=>{
-  const k=b.getAttribute("data-scenario");
-  if(k==="clb9") scenario={langL:9,langR:9,langW:9,langS:9};
-  if(k==="clb10") scenario={langL:10,langR:10,langW:10,langS:10};
-  if(k==="can2") scenario={canWork:Math.min(5,(parseFloat(val("canWork"))||0)+1)};
-  if(k==="pnp") scenario={pnp:600};
-  if(k==="reset") scenario={};
-  render();
-}));
-render();
-</script>
-<script>
-let supa=null;
-try{ if(window.APP_CONFIG && window.APP_CONFIG.SUPABASE_URL.indexOf("http")===0){ supa=window.supabase.createClient(window.APP_CONFIG.SUPABASE_URL, window.APP_CONFIG.SUPABASE_ANON_KEY); } }catch(e){ supa=null; }
-async function refreshAuth(){ if(!supa){ $("authStatus").textContent="Saving is being connected. Simulation works now."; return; } const {data}=await supa.auth.getSession(); $("authStatus").textContent=data.session? ("Signed in as "+data.session.user.email) : "Not signed in."; }
-$("signUpBtn").addEventListener("click",async()=>{ if(!supa) return refreshAuth(); const {error}=await supa.auth.signUp({email:val("email"),password:val("password")}); $("authStatus").textContent=error? error.message : "Account created. Check your email to confirm, then sign in."; });
-$("signInBtn").addEventListener("click",async()=>{ if(!supa) return refreshAuth(); const {error}=await supa.auth.signInWithPassword({email:val("email"),password:val("password")}); if(error) $("authStatus").textContent=error.message; refreshAuth(); });
-$("signOutBtn").addEventListener("click",async()=>{ if(supa) await supa.auth.signOut(); refreshAuth(); });
-$("saveBtn").addEventListener("click",async()=>{ if(!supa) return refreshAuth(); const {data}=await supa.auth.getSession(); if(!data.session){ $("saveStatus").textContent="Sign in first, then save."; return; } const r=compute({}); const {error}=await supa.from("profiles").insert({user_id:data.session.user.id, profile:currentProfile(), crs:r.total, label:"My profile"}); $("saveStatus").textContent=error? error.message : ("Saved. CRS "+r.total+"."); });
-$("loadBtn").addEventListener("click",async()=>{ if(!supa) return refreshAuth(); const {data,error}=await supa.from("profiles").select("*").order("created_at",{ascending:false}).limit(1); if(error){ $("saveStatus").textContent=error.message; return; } if(!data||!data.length){ $("saveStatus").textContent="No saved profile found yet."; return; } const p=data[0].profile; Object.keys(p).forEach(k=>{ if($(k)) $(k).value=p[k]; }); scenario={}; render(); $("saveStatus").textContent="Loaded your most recent saved profile."; });
-refreshAuth();
-</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.min.js" integrity="sha384-gnyZit14c5lnGcarmA166QQjjJXpucw25ogZXuwH3HxxY904zHkBqmxVpelsPorb" crossorigin="anonymous"></script>
+<script src="app.js"></script>
 </body>
 </html>

@@ -3,8 +3,9 @@
 A public CRS simulator and pathway advisor for Canadian immigration, built on the CRS grid in force since November 3, 2026 (max 1,270).
 
 ## What it does
-- Collects a visitor profile: age, education and ECA, language scores, Canadian and foreign work, Canadian education, French, sibling in Canada, provincial nomination, and high-wage job offer tier.
-- Calculates an estimated CRS score with a full breakdown, including skill transferability groups capped at 50 each and additional points capped at 600.
+- Collects a visitor profile: age, marital status and spouse factors, education and ECA, first and second language scores, Canadian and foreign work, high-wage occupation bonus, certificate of qualification, Canadian education, French, sibling in Canada, provincial nomination, and high-wage job offer tier.
+- Calculates an estimated CRS score with a full breakdown, including the November 3, 2026 Labour Market Integration factor (Canadian work route or job offer route, whichever is higher, never both), skill transferability groups capped at 50 each and 100 overall, spouse factors when a spouse is accompanying, and additional points capped at 600.
+- The scoring engine is covered by an automated test harness in `audit/engine-tests.js`, with audit reports in `audit/` (accuracy audit against the official IRCC tables, test results, design system).
 - Shows what-if scenarios: language to CLB 9 or CLB 10, a second year of Canadian work, a provincial nomination, and French.
 - Checks pathway eligibility for CEC, FSW, category-based draws, PNP and RCIP, with reasons.
 - Gives ranked recommendations and a future outlook with 2026 draw ranges, expiry countdowns and a 30 / 60 / 90 day plan.
