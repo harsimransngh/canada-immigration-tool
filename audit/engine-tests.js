@@ -25,7 +25,7 @@ while ((m = re.exec(html))) {
   }
   elements[id] = el;
 }
-global.document = { getElementById: id => elements[id] || null, querySelectorAll: () => [], addEventListener() {} };
+global.document = { getElementById: id => elements[id] || null, querySelectorAll: () => [], querySelector: () => null, addEventListener() {} };
 global.window = {}; global.localStorage = { getItem: () => null, setItem() {}, removeItem() {} };
 eval(rules); eval(draws);
 const engineSrc = appjs.split("let scenario")[0];

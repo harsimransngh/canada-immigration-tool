@@ -69,10 +69,14 @@ function compute(overrides){
 }
 
 let scenario={};
+let trackTimer=null;
+function trackScoreDebounced(total){ try{ if(typeof window!=="undefined" && window.trackScore){ if(trackTimer) clearTimeout(trackTimer); trackTimer=setTimeout(()=>{ try{ window.trackScore(total, val("langTest")); }catch(e){} }, 1500); } }catch(e){} }
+function trackEv(name, data){ try{ if(typeof window!=="undefined" && window.trackEvent) window.trackEvent(name, data||{}); }catch(e){} }
 function currentProfile(){ const p={}; fields.forEach(f=>p[f]=val(f)); return p; }
 function daysUntil(dateStr){ if(!dateStr) return null; const now=new Date(); now.setHours(0,0,0,0); const d=new Date(dateStr+"T00:00:00"); if(isNaN(d.getTime())) return null; return Math.round((d-now)/86400000); }
 function render(){
   const r=compute(scenario);
+  trackScoreDebounced(r.total);
   $("crsScore").textContent=r.total;
   $("crsBar").style.width=Math.min(100,Math.round(r.total/1270*100))+"%";
   const gap=LAST_CEC.cutoff-r.total;
@@ -146,7 +150,7 @@ function applyTestUI(){
   LANG_IDS.forEach((id,i)=>{ const el=$(id); if(el){ el.step=cfg.step; el.max=cfg.max[i]; el.min=0; } });
   const note=$("tefNote"); if(note) note.style.display = t==="tef" ? "block" : "none";
 }
-$("langTest").addEventListener("change",()=>{ applyTestUI(); scenario={}; render(); });
+$("langTest").addEventListener("change",()=>{ applyTestUI(); scenario={}; render(); trackEv("lang_test_selected",{test:val("langTest")}); });
 applyTestUI();
 $("marital").addEventListener("input",syncSpouseBlock); syncSpouseBlock();
 const DEFAULTS={}; fields.forEach(f=>{ const e=$(f); if(e) DEFAULTS[f]=e.value; });
@@ -158,19 +162,21 @@ document.querySelectorAll("[data-scenario]").forEach(b=>b.addEventListener("clic
   if(k==="pnp") scenario={pnp:600};
   if(k==="reset") scenario={};
   render();
+  trackEv("scenario_click",{meta:{scenario:k}});
 }));
 render();
 
 if($("drawsTable")){ $("drawsTable").innerHTML=DRAWS.cec.map(x=>"<tr><td>"+fmtDate(x.date)+"</td><td>"+(x.round? "#"+x.round : "")+"</td><td>"+x.cutoff+"</td><td>"+(x.itas? x.itas.toLocaleString("en-CA") : "")+"</td></tr>").join(""); }
 if($("drawsNote")){ $("drawsNote").textContent="Source: IRCC rounds of invitations, checked "+fmtDate(DRAWS.updated)+". "+(DRAWS.status||"")+" No general all-program draws have been held since April 2024."; }
-if($("printBtn")){ $("printBtn").addEventListener("click",()=>window.print()); }
+if($("printBtn")){ $("printBtn").addEventListener("click",()=>{ trackEv("print_report",{}); window.print(); }); }
 
 let supa=null;
 try{ if(window.APP_CONFIG && window.APP_CONFIG.SUPABASE_URL.indexOf("http")===0){ supa=window.supabase.createClient(window.APP_CONFIG.SUPABASE_URL, window.APP_CONFIG.SUPABASE_ANON_KEY); } }catch(e){ supa=null; }
 async function refreshAuth(){ if(!supa){ $("authStatus").textContent="Saving is being connected. Simulation works now."; return; } const {data}=await supa.auth.getSession(); $("authStatus").textContent=data.session? ("Signed in as "+data.session.user.email) : "Not signed in."; }
-$("signUpBtn").addEventListener("click",async()=>{ if(!supa) return refreshAuth(); const {error}=await supa.auth.signUp({email:val("email"),password:val("password")}); $("authStatus").textContent=error? error.message : "Account created. Check your email to confirm, then sign in."; });
-$("signInBtn").addEventListener("click",async()=>{ if(!supa) return refreshAuth(); const {error}=await supa.auth.signInWithPassword({email:val("email"),password:val("password")}); if(error){ $("authStatus").textContent=error.message; return; } refreshAuth(); });
+$("signUpBtn").addEventListener("click",async()=>{ if(!supa) return refreshAuth(); const {error}=await supa.auth.signUp({email:val("email"),password:val("password")}); if(!error) trackEv("sign_up",{}); $("authStatus").textContent=error? error.message : "Account created. Check your email to confirm, then sign in."; });
+$("signInBtn").addEventListener("click",async()=>{ if(!supa) return refreshAuth(); const {error}=await supa.auth.signInWithPassword({email:val("email"),password:val("password")}); if(error){ $("authStatus").textContent=error.message; return; } trackEv("sign_in",{}); refreshAuth(); });
 $("signOutBtn").addEventListener("click",async()=>{ if(supa) await supa.auth.signOut(); refreshAuth(); });
-$("saveBtn").addEventListener("click",async()=>{ if(!supa) return refreshAuth(); const {data}=await supa.auth.getSession(); if(!data.session){ $("saveStatus").textContent="Sign in first, then save."; return; } const r=compute({}); await supa.from("profiles").delete().eq("user_id",data.session.user.id); const {error}=await supa.from("profiles").insert({user_id:data.session.user.id, profile:currentProfile(), crs:r.total, label:"My profile"}); $("saveStatus").textContent=error? error.message : ("Saved. CRS "+r.total+"."); });
-$("loadBtn").addEventListener("click",async()=>{ if(!supa) return refreshAuth(); const {data,error}=await supa.from("profiles").select("*").order("created_at",{ascending:false}).limit(1); if(error){ $("saveStatus").textContent=error.message; return; } if(!data||!data.length){ $("saveStatus").textContent="No saved profile found yet."; return; } const p=data[0].profile; if(p.education && EDU_ORDER.indexOf(p.education)===-1){ const map={"0":"none","30":"hs","84":"one","90":"one","98":"two","120":"bachelor","128":"twoplus","135":"master","150":"phd"}; if(map[p.education]) p.education=map[p.education]; } if(p.french!==undefined && p.frenchNCLC===undefined){ p.frenchNCLC=(parseFloat(p.french)>0)?"1":"0"; } Object.keys(p).forEach(k=>{ if(fields.includes(k) && $(k)) $(k).value=p[k]; }); syncSpouseBlock(); applyTestUI(); scenario={}; render(); $("saveStatus").textContent="Loaded your most recent saved profile."; });
+$("saveBtn").addEventListener("click",async()=>{ if(!supa) return refreshAuth(); const {data}=await supa.auth.getSession(); if(!data.session){ $("saveStatus").textContent="Sign in first, then save."; return; } const r=compute({}); await supa.from("profiles").delete().eq("user_id",data.session.user.id); const {error}=await supa.from("profiles").insert({user_id:data.session.user.id, profile:currentProfile(), crs:r.total, label:"My profile"}); if(!error) trackEv("profile_saved",{}); $("saveStatus").textContent=error? error.message : ("Saved. CRS "+r.total+"."); });
+$("loadBtn").addEventListener("click",async()=>{ if(!supa) return refreshAuth(); const {data,error}=await supa.from("profiles").select("*").order("created_at",{ascending:false}).limit(1); if(error){ $("saveStatus").textContent=error.message; return; } if(!data||!data.length){ $("saveStatus").textContent="No saved profile found yet."; return; } const p=data[0].profile; if(p.education && EDU_ORDER.indexOf(p.education)===-1){ const map={"0":"none","30":"hs","84":"one","90":"one","98":"two","120":"bachelor","128":"twoplus","135":"master","150":"phd"}; if(map[p.education]) p.education=map[p.education]; } if(p.french!==undefined && p.frenchNCLC===undefined){ p.frenchNCLC=(parseFloat(p.french)>0)?"1":"0"; } Object.keys(p).forEach(k=>{ if(fields.includes(k) && $(k)) $(k).value=p[k]; }); syncSpouseBlock(); applyTestUI(); scenario={}; render(); trackEv("profile_loaded",{}); $("saveStatus").textContent="Loaded your most recent saved profile."; });
 refreshAuth();
+const mmLink=document.querySelector('a[href*="issues/new"]'); if(mmLink) mmLink.addEventListener("click",()=>trackEv("mismatch_click",{}));

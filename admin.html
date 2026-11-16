@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Owner Dashboard: Canada Immigration Tool</title>
+<style>
+:root{--dark:#26374a;--muted:#52616e;--line:#c9d3db;--field-border:#6f6f6f;--bg:#f6f8fa;--card:#fff;--focus:#0535d2}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#17202a;background:var(--bg);line-height:1.5}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+header{background:var(--dark);color:#fff;padding:22px 20px}header .wrap,main{max-width:1080px;margin:0 auto}
+h1{margin:0;font-size:24px}header p{margin:4px 0 0;color:#c8d3dd;font-size:14px}
+main{padding:20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+label{display:block;font-size:13px;font-weight:600;margin:10px 0 4px}
+input{width:100%;padding:9px 10px;border:1px solid var(--field-border);border-radius:8px;font-size:16px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button{background:var(--dark);color:#fff;border:0;border-radius:8px;padding:12px 16px;min-height:44px;font-size:14px;font-weight:700;cursor:pointer;margin:4px 6px 4px 0}
+button.alt{background:#fff;color:var(--dark);border:1px solid var(--dark)}
+table{width:100%;border-collapse:collapse;font-size:13px}td,th{padding:6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}@media(max-width:700px){.kpis{grid-template-columns:1fr 1fr}}
+.kpi{background:#f0f4f7;border-radius:10px;padding:10px}.kpi b{font-size:22px;display:block}
+.note{font-size:13px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:860px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<h1>Owner dashboard</h1>
+<p>Canada Immigration Tool activity. Visible only to the owner account. Logs are kept for 90 days.</p>
+</div></header>
+<main>
+<section class="card" id="authCard">
+<h2>Sign in</h2>
+<div class="row">
+<div><label for="email">Email</label><input id="email" type="email" autocomplete="email" placeholder="contact@harsimran.pro"></div>
+<div><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" placeholder="Password"></div>
+</div>
+<button type="button" id="signInBtn">Sign in</button>
+<button type="button" class="alt" id="signOutBtn">Sign out</button>
+<p class="note" id="authStatus">Not signed in.</p>
+<p class="note">Use the owner account, contact@harsimran.pro. If you have not created it yet, create it on the main tool page first with that exact email, confirm it, then come back here. Row level security means any other account sees nothing.</p>
+</section>
+<div id="dash" style="display:none">
+<section class="card">
+<div class="kpis">
+<div class="kpi"><span class="note">Events (loaded)</span><b id="kEvents">0</b></div>
+<div class="kpi"><span class="note">Unique sessions</span><b id="kSessions">0</b></div>
+<div class="kpi"><span class="note">Unique IPs</span><b id="kIps">0</b></div>
+<div class="kpi"><span class="note">Simulations scored</span><b id="kScores">0</b></div>
+</div>
+<button type="button" id="refreshBtn">Refresh</button>
+<p class="note" id="loadNote"></p>
+</section>
+<div class="grid">
+<section class="card"><h2>Events by type</h2><table><tbody id="byType"></tbody></table></section>
+<section class="card"><h2>Score bands (simulations)</h2><table><tbody id="byBand"></tbody></table></section>
+<section class="card"><h2>Top countries</h2><table><tbody id="byCountry"></tbody></table></section>
+<section class="card"><h2>Language tests picked</h2><table><tbody id="byTest"></tbody></table></section>
+</div>
+<section class="card">
+<h2>Latest activity</h2>
+<table><thead><tr><th>When</th><th>Event</th><th>IP</th><th>Place</th><th>Band / test</th><th>Session</th></tr></thead><tbody id="feed"></tbody></table>
+</section>
+</div>
+</main>
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.min.js" integrity="sha384-gnyZit14c5lnGcarmA166QQjjJXpucw25ogZXuwH3HxxY904zHkBqmxVpelsPorb" crossorigin="anonymous"></script>
+<script src="admin.js"></script>
+</body>
+</html>
