@@ -41,8 +41,21 @@ a{color:#0b5cad}
 #mobileScore{display:none}
 @media(max-width:860px){#mobileScore{display:flex;justify-content:space-between;gap:10px;position:sticky;top:0;z-index:5;background:var(--dark);color:#fff;padding:10px 16px;font-weight:700;font-size:15px}}
 #printHead{display:none}
+.banner{background:#fdf6e0;border:1px solid #e3c878;border-radius:10px;padding:12px;margin:0 0 12px;font-size:14px}
+.banner button{margin-top:8px}
+.help{font-size:13px;color:var(--muted);margin:2px 0 0}
+.stepPanel{margin:0}
+.wiznav{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
+.wiznav button:disabled{opacity:.45;cursor:default}
+.steps button{flex:1;min-width:110px;background:#f0f4f7;color:var(--dark);border:1px solid var(--line);border-radius:8px;padding:8px 6px;font-size:13px;font-weight:700;min-height:40px;margin:0}
+.steps button[aria-current="step"]{background:var(--dark);color:#fff;border-color:var(--dark)}
+.barwrap{position:relative}
+.cutmark{position:absolute;top:-3px;width:3px;height:18px;background:var(--dark);border-radius:2px}
+.card{box-shadow:0 1px 3px rgba(23,32,42,.08)}
+@media(min-width:861px){section[aria-label="Your result"]{position:sticky;top:16px;align-self:start}}
+ol.howto{margin:6px 0 0 18px} ol.howto li{margin:6px 0}
 @media print{
- header,#mobileScore,.steps,button{display:none !important}
+ header,#mobileScore,.steps,button,#introCard{display:none !important}
  section[aria-label="Your profile"],section[aria-label="Save your profile"]{display:none !important}
  .grid{grid-template-columns:1fr}
  body{background:#fff} main{padding:0}
@@ -56,19 +69,33 @@ a{color:#0b5cad}
 <h1>Canada Immigration Tool</h1>
 <p>Simulate your profile on the CRS grid in force since November 3, 2026. Get a full points breakdown, pathway eligibility, what-if scenarios, ranked recommendations and a future outlook. Free, no account needed to simulate.</p>
 <p style="font-size:13px;margin-top:8px">Independent tool. Not affiliated with IRCC or the Government of Canada.</p>
+<p style="font-size:13px;margin-top:4px">Free. No account needed to simulate. The answers you type are not stored.</p>
 </div></header>
 <div id="mobileScore" aria-live="polite"><span>Estimated CRS <span id="mobileScoreVal">496</span></span><span id="mobileScoreGap"></span></div>
 <main>
 <div id="printHead"><h1>Canada Immigration Tool: CRS report</h1><p>Independent planning estimate. Not affiliated with IRCC or the Government of Canada. Your official score is the one IRCC calculates inside your Express Entry profile.</p></div>
+<section class="card" id="introCard" aria-label="How this works">
+<h2>How this works</h2>
+<ol class="howto">
+<li><b>Answer 4 short steps</b> about your age, education, language scores and work history. It takes about 2 minutes.</li>
+<li><b>Your score updates live</b> on the right as you type, with every point explained in the breakdown.</li>
+<li><b>Then see your pathways, what-if scenarios and a plan.</b> Nothing you type is saved unless you create an account at the bottom and choose to save.</li>
+</ol>
+</section>
 <div class="grid">
 <section class="card" aria-label="Your profile">
-<h2>Your profile</h2>
+<h2>Your profile: 4 short steps</h2>
+<div class="banner" id="sampleBanner"><b>This form starts with a sample profile</b> so you can see a full result right away. It is not your data, and its score is not your score.<br>
+<button type="button" id="blankBtn">Clear it and start with my own details</button>
+<button type="button" class="alt" id="keepSampleBtn">Keep the sample and edit it</button></div>
 <nav class="steps" aria-label="Profile steps">
-<a href="#step1">1. Profile</a><a href="#step2">2. Language</a><a href="#step3">3. Work</a><a href="#step4">4. Extras and dates</a>
+<button type="button" data-goto="1">1. Profile</button><button type="button" data-goto="2">2. Language</button><button type="button" data-goto="3">3. Work</button><button type="button" data-goto="4">4. Extras and dates</button>
 </nav>
 <div class="progress" role="progressbar" aria-label="Profile completion"><i id="progressBar" style="width:0%"></i></div>
 <p class="note" id="progressText">Your score updates live as you fill the form. Nothing is saved unless you create an account below.</p>
+<div class="stepPanel" id="panel1">
 <h3 class="stephead" id="step1">Step 1 of 4: Profile</h3>
+<p class="help">The basics. Age points are highest from 20 to 29 and fall every year after that.</p>
 <div class="row">
 <div><label for="age">Age</label><input id="age" type="number" step="1" min="17" max="60" value="28"></div>
 <div><label for="marital">Marital status</label><select id="marital"><option value="single" selected>Single / never married</option><option value="married_nonacc">Married / common-law, spouse NOT accompanying</option><option value="married_acc">Married / common-law, spouse accompanying</option></select></div>
@@ -88,13 +115,17 @@ a{color:#0b5cad}
 <select id="spouseCanWork"><option value="0" selected>None</option><option value="5">1 year</option><option value="7">2 years</option><option value="8">3 years</option><option value="9">4 years</option><option value="10">5+ years</option></select>
 </div>
 <label for="education">Highest education (with ECA if foreign)</label>
+<p class="help">ECA is an Educational Credential Assessment. For a foreign degree, pick the level your ECA report confirms, not the level on the diploma alone.</p>
 <select id="education">
 <option value="none">Less than high school</option><option value="hs">High school</option>
 <option value="one">One-year postsecondary</option><option value="two">Two-year postsecondary</option>
 <option value="bachelor">Bachelor degree (3+ years)</option><option value="twoplus">Two or more credentials (one 3+ years)</option>
 <option value="master" selected>Master degree / professional degree</option><option value="phd">PhD</option>
 </select>
+</div>
+<div class="stepPanel" id="panel2">
 <h3 class="stephead" id="step2">Step 2 of 4: Language</h3>
+<p class="help">Language is the biggest lever most people control. CLB is the Canadian benchmark level IRCC converts every test into.</p>
 <label for="langTest">First official language test</label>
 <select id="langTest">
 <option value="clb" selected>Enter CLB / NCLC directly</option>
@@ -121,7 +152,10 @@ a{color:#0b5cad}
 <div><label for="lang2W">Writing</label><input id="lang2W" type="number" step="1" min="0" max="12" value="0"></div>
 <div><label for="lang2S">Speaking</label><input id="lang2S" type="number" step="1" min="0" max="12" value="0"></div>
 </div>
+</div>
+<div class="stepPanel" id="panel3">
 <h3 class="stephead" id="step3">Step 3 of 4: Work</h3>
+<p class="help">Skilled work means jobs in TEER 0, 1, 2 or 3 of the National Occupational Classification.</p>
 <div class="row">
 <div><label for="canWork">Canadian skilled work (years)</label><select id="canWork"><option value="0">None</option><option value="1" selected>1 year</option><option value="2">2 years</option><option value="3">3 years</option><option value="4">4 years</option><option value="5">5+ years</option></select></div>
 <div><label for="foreignWork">Foreign skilled work (years)</label><select id="foreignWork"><option value="0">None</option><option value="1">1 to 2 years</option><option value="3" selected>3+ years</option></select></div>
@@ -134,13 +168,19 @@ a{color:#0b5cad}
 <div><label for="foreignWorkHours">Foreign hours / week</label><input id="foreignWorkHours" type="number" step="1" min="0" max="80" value=""></div>
 </div>
 <div class="row">
-<div><label for="wageBonus">Canadian work in a listed high-wage occupation, 12+ months</label><select id="wageBonus"><option value="0" selected>No / not listed</option><option value="20">At 1.3x the median wage (20 pts)</option><option value="40">At 1.5x the median wage (40 pts)</option><option value="70">At 2x the median wage (70 pts)</option></select></div>
-<div><label for="certQual">Certificate of qualification (trades, issued in Canada)</label><select id="certQual"><option value="0" selected>No</option><option value="1">Yes</option></select></div>
+<div><label for="wageBonus">Canadian work in a listed high-wage occupation, 12+ months</label>
+<p class="help">Counts only if your Canadian job is on IRCC's high-wage occupation list and you have worked in it for at least 12 months.</p><select id="wageBonus"><option value="0" selected>No / not listed</option><option value="20">At 1.3x the median wage (20 pts)</option><option value="40">At 1.5x the median wage (40 pts)</option><option value="70">At 2x the median wage (70 pts)</option></select></div>
+<div><label for="certQual">Certificate of qualification (trades, issued in Canada)</label>
+<p class="help">A trade certificate issued by a Canadian province or territory, for example a journeyperson certificate.</p><select id="certQual"><option value="0" selected>No</option><option value="1">Yes</option></select></div>
 </div>
+</div>
+<div class="stepPanel" id="panel4">
 <h3 class="stephead" id="step4">Step 4 of 4: Extras and dates</h3>
+<p class="help">Bonuses, your job category, and the dates that drive your countdowns.</p>
 <div class="row">
 <div><label for="canEdu">Canadian postsecondary credential</label><select id="canEdu"><option value="0">None</option><option value="15" selected>1 to 2 years (15 pts)</option><option value="30">3+ years (30 pts)</option></select></div>
-<div><label for="nocTeer">Your NOC TEER category</label><select id="nocTeer"><option value="1">TEER 0 / 1</option><option value="2" selected>TEER 2 / 3</option><option value="4">TEER 4 / 5</option></select></div>
+<div><label for="nocTeer">Your NOC TEER category</label>
+<p class="help">TEER is the skill level inside your job's NOC code. TEER 2 or 3 covers most trades, technical and health support jobs.</p><select id="nocTeer"><option value="1">TEER 0 / 1</option><option value="2" selected>TEER 2 / 3</option><option value="4">TEER 4 / 5</option></select></div>
 </div>
 <div class="row">
 <div><label for="frenchNCLC">French at NCLC 7+ in all four skills</label><select id="frenchNCLC"><option value="0" selected>No</option><option value="1">Yes (bonus tier set automatically from your first language scores)</option></select></div>
@@ -148,7 +188,8 @@ a{color:#0b5cad}
 </div>
 <div class="row">
 <div><label for="pnp">Provincial nomination</label><select id="pnp"><option value="0" selected>No</option><option value="600">Yes (600 pts)</option></select></div>
-<div><label for="offer">Job offer in a high-wage listed occupation (counts only if higher than your work route)</label><select id="offer"><option value="0" selected>No offer / occupation not listed</option><option value="50">Listed at 1.3x median (50 pts)</option><option value="70">Listed at 1.5x median (70 pts)</option><option value="100">Listed at 2x median (100 pts)</option></select></div>
+<div><label for="offer">Job offer in a high-wage listed occupation (counts only if higher than your work route)</label>
+<p class="help">Since November 3, 2026, IRCC counts either your work route or a listed high-wage offer, whichever is higher. The two no longer add together.</p><select id="offer"><option value="0" selected>No offer / occupation not listed</option><option value="50">Listed at 1.3x median (50 pts)</option><option value="70">Listed at 1.5x median (70 pts)</option><option value="100">Listed at 2x median (100 pts)</option></select></div>
 </div>
 <div class="row">
 <div><label for="relocate">Willing to relocate for RCIP / PNP</label><select id="relocate"><option value="yes" selected>Yes</option><option value="no">No</option></select></div>
@@ -158,12 +199,19 @@ a{color:#0b5cad}
 <div><label for="permitDate">Work permit expiry (if any)</label><input id="permitDate" type="date" value="2029-01-28"></div>
 <div><label for="funds">Settlement funds available (CAD)</label><input id="funds" type="number" min="0" step="500" value="15000"></div>
 </div>
+</div>
+<div class="wiznav">
+<button type="button" class="alt" id="wizBack">Back</button>
+<button type="button" id="wizNext">Continue</button>
+<button type="button" class="alt" id="wizAll">Show all steps at once</button>
+</div>
 </section>
 <section class="card" aria-label="Your result">
 <h2>Your estimated CRS score</h2>
 <div class="score" id="crsScore" aria-live="polite">496</div>
 <p class="sub" id="crsGap">Out of 1,270 on the November 3, 2026 grid.</p>
-<div class="bar"><i id="crsBar" style="width:39%"></i></div>
+<div class="barwrap"><div class="bar"><i id="crsBar" style="width:39%"></i></div><span class="cutmark" id="cutoffMarker" style="left:40.9%"></span></div>
+<p class="note" id="cutoffMarkLabel">The dark line marks the last CEC cutoff.</p>
 <div class="kpis">
 <div class="kpi"><span class="sub">Last CEC cutoff</span><b id="lastCutoff">519</b><span class="small" id="lastCutoffMeta">Oct 15, 2026, 2,500 ITAs</span></div>
 <div class="kpi"><span class="sub">2026 CEC range</span><b>507 to 523</b><span class="small">18 rounds in 2026</span></div>
@@ -183,6 +231,17 @@ a{color:#0b5cad}
 <button type="button" class="alt" data-scenario="reset">Reset scenarios</button>
 </section>
 </div>
+<section class="card" aria-label="How your score is calculated">
+<h2>How your score is calculated</h2>
+<p>Your total is built the same way IRCC builds it, in three blocks:</p>
+<ul>
+<li><b>Core factors:</b> age, education, first and second language, plus Labour Market Integration. That last part counts either your Canadian work route or a job offer in a listed high-wage occupation, whichever is higher, capped at 150. The two never add together since November 3, 2026.</li>
+<li><b>Skill transferability:</b> combinations like education plus strong language, or foreign work plus Canadian work. Capped at 100.</li>
+<li><b>Additional points:</b> a provincial nomination (600), French ability, a sibling in Canada, Canadian study. Capped at 600.</li>
+</ul>
+<p class="small"><span id="rulesMeta">Rules grid effective November 3, 2026.</span> Sources: <a href="https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/check-score/crs-criteria.html" target="_blank" rel="noopener">IRCC CRS criteria</a> and <a href="https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/rounds-invitations.html" target="_blank" rel="noopener">IRCC rounds of invitations</a>. Language conversions use IRCC's official equivalency charts.</p>
+<p class="small"><b>Check us:</b> the sample profile this page opens with scores <b>496</b>. In the what-if scenarios, push "All language skills to CLB 9" and it must read <b>524</b>; CLB 10 must read <b>536</b>. Run the same details in IRCC's own calculator and compare. If your numbers ever disagree with your IRCC profile, use the mismatch report in the results card. Reports become test cases.</p>
+</section>
 <section class="card" aria-label="Eligibility">
 <h2>Pathway eligibility</h2>
 <table><thead><tr><th>Pathway</th><th>Status</th><th>Why</th></tr></thead><tbody id="eligibility"></tbody></table>

@@ -180,3 +180,39 @@ $("saveBtn").addEventListener("click",async()=>{ if(!supa) return refreshAuth();
 $("loadBtn").addEventListener("click",async()=>{ if(!supa) return refreshAuth(); const {data,error}=await supa.from("profiles").select("*").order("created_at",{ascending:false}).limit(1); if(error){ $("saveStatus").textContent=error.message; return; } if(!data||!data.length){ $("saveStatus").textContent="No saved profile found yet."; return; } const p=data[0].profile; if(p.education && EDU_ORDER.indexOf(p.education)===-1){ const map={"0":"none","30":"hs","84":"one","90":"one","98":"two","120":"bachelor","128":"twoplus","135":"master","150":"phd"}; if(map[p.education]) p.education=map[p.education]; } if(p.french!==undefined && p.frenchNCLC===undefined){ p.frenchNCLC=(parseFloat(p.french)>0)?"1":"0"; } Object.keys(p).forEach(k=>{ if(fields.includes(k) && $(k)) $(k).value=p[k]; }); syncSpouseBlock(); applyTestUI(); scenario={}; render(); trackEv("profile_loaded",{}); $("saveStatus").textContent="Loaded your most recent saved profile."; });
 refreshAuth();
 const mmLink=document.querySelector('a[href*="issues/new"]'); if(mmLink) mmLink.addEventListener("click",()=>trackEv("mismatch_click",{}));
+
+// ---- Guided wizard, sample handling, trust markers (UX overhaul) ----
+let wizStep = 1, wizAll = false;
+function showStep(n) {
+  wizStep = Math.max(1, Math.min(4, n));
+  for (let i = 1; i <= 4; i++) {
+    const p = $("panel" + i); if (p) p.style.display = (wizAll || i === wizStep) ? "" : "none";
+    const c = document.querySelector('[data-goto="' + i + '"]'); if (c) c.setAttribute("aria-current", i === wizStep ? "step" : "false");
+  }
+  const b = $("wizBack"); if (b) b.disabled = wizStep === 1;
+  const nx = $("wizNext"); if (nx) nx.textContent = wizStep === 4 ? "See my result" : "Continue";
+}
+document.querySelectorAll("[data-goto]").forEach(b => b.addEventListener("click", () => showStep(parseInt(b.getAttribute("data-goto"), 10) || 1)));
+if ($("wizBack")) $("wizBack").addEventListener("click", () => showStep(wizStep - 1));
+if ($("wizNext")) $("wizNext").addEventListener("click", () => {
+  if (wizStep < 4) { showStep(wizStep + 1); return; }
+  try { const r = document.querySelector('section[aria-label="Your result"]'); if (r) r.scrollIntoView({ behavior: "smooth", block: "start" }); } catch (e) {}
+});
+if ($("wizAll")) $("wizAll").addEventListener("click", () => {
+  wizAll = !wizAll;
+  $("wizAll").textContent = wizAll ? "Back to one step at a time" : "Show all steps at once";
+  const nv = document.querySelector(".wiznav"); showStep(wizStep);
+  if ($("wizBack")) $("wizBack").style.display = wizAll ? "none" : "";
+  if ($("wizNext")) $("wizNext").style.display = wizAll ? "none" : "";
+});
+const BLANK = { age: "", marital: "single", spouseEdu: "0", spouseLangL: "0", spouseLangR: "0", spouseLangW: "0", spouseLangS: "0", spouseCanWork: "0", education: "none", langTest: "clb", langL: "0", langR: "0", langW: "0", langS: "0", lang2L: "0", lang2R: "0", lang2W: "0", lang2S: "0", canWork: "0", foreignWork: "0", canWorkMonths: "", canWorkHours: "", foreignWorkMonths: "", foreignWorkHours: "", wageBonus: "0", certQual: "0", canEdu: "0", nocTeer: "2", frenchNCLC: "0", sibling: "0", pnp: "0", offer: "0", relocate: "yes", testDate: "", permitDate: "", funds: "" };
+if ($("blankBtn")) $("blankBtn").addEventListener("click", () => {
+  Object.keys(BLANK).forEach(k => { if ($(k)) $(k).value = BLANK[k]; });
+  scenario = {}; syncSpouseBlock(); applyTestUI(); render(); showStep(1);
+  const bn = $("sampleBanner"); if (bn) bn.style.display = "none";
+});
+if ($("keepSampleBtn")) $("keepSampleBtn").addEventListener("click", () => { const bn = $("sampleBanner"); if (bn) bn.style.display = "none"; });
+const cmEl = $("cutoffMarker"); if (cmEl) cmEl.style.left = (LAST_CEC.cutoff / R.meta.maxCRS * 100) + "%";
+const cmlEl = $("cutoffMarkLabel"); if (cmlEl) cmlEl.textContent = "The dark line marks the last CEC cutoff: " + LAST_CEC.cutoff + " (" + fmtDate(LAST_CEC.date) + ").";
+const rmEl = $("rulesMeta"); if (rmEl) rmEl.textContent = "Rules grid effective " + fmtDate(R.meta.effective) + ". Last verified against IRCC on " + fmtDate(R.meta.verified) + ".";
+showStep(1);

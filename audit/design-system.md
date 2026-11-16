@@ -283,3 +283,12 @@ P2: polish and completeness
 - Canada.ca global footer main band (background #26374A, white text): design.canada.ca/common-design-patterns/site-footer-main.html
 - Competitor presentation and disclaimer patterns, checked 2026-11-15: crsmeter.com, crstool.com, crscalculatorcanada.com, ee26.ca
 - Contrast ratios in sections 2 and 3 were measured with the WCAG relative luminance formula against the current index.html tokens.
+
+## Implemented tokens (UX overhaul, 2026-11-15)
+
+Applied in index.html :root and component classes, replacing the ad hoc styling:
+- Color: structural dark #26374A (header, primary buttons, active step), accent red #D80621 (score bar, danger action only), good #137547, warn #8A5A00, bad #B42318, focus #0535D2, field border #6F6F6F, line #C9D3DB, background #F6F8FA, card #FFFFFF with a single soft shadow.
+- Type: page title 30, card titles 20, section heads 16, labels 13 semibold, body 14 to 16, notes 13 muted #52616E.
+- Shape: cards radius 14, inputs and buttons radius 8, pills 99. Buttons min-height 44. Inputs 16px (no iOS zoom).
+- Layout: max width 1080, two-column grid collapsing at 860, results card sticky on desktop, sticky score bar on mobile.
+- Components: step chips (active = dark filled), progress bar, banner (sample notice), wizard nav, score bar with a cutoff marker.
