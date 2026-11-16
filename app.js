@@ -252,6 +252,11 @@ render = function () {
     } else {
       document.querySelectorAll("[data-scenario]").forEach(b => { b.disabled = false; });
     }
+    const pl2 = $("planList");
+    if (pl2) {
+      if (!hasInput) { if (!pl2.dataset.orig) pl2.dataset.orig = pl2.innerHTML; pl2.innerHTML = "<li>Add your age, education and at least one language score, and your 30 / 60 / 90 day plan will be built from your answers.</li>"; }
+      else if (pl2.dataset.orig) { pl2.innerHTML = pl2.dataset.orig; }
+    }
   } catch (e) { /* display helpers must never break rendering */ }
 };
 const __blankBtn = $("blankBtn");
