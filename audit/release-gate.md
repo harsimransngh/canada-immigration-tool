@@ -51,3 +51,8 @@ The completion report for every build states: what changed, the golden suite
 result, the stress suite result (including fuzz counts), the live verification
 result, and any known limitation that remains. A failure anywhere stops the
 release; it is fixed and the whole battery reruns, never just the failed case.
+
+## 6. Auth flow check (added 2026-11-15 after the localhost redirect miss)
+Any build that touches auth, plus every new Supabase project setup, must verify:
+- Supabase Authentication URL Configuration: Site URL equals the production URL (never localhost), and the production origin is in the redirect allow list.
+- One real end to end pass: sign up with a test address, open the confirmation email, click the link, and confirm it lands on the production site and the account confirms. Delete the test user after.
