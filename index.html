@@ -71,7 +71,7 @@ ol.howto{margin:6px 0 0 18px} ol.howto li{margin:6px 0}
 <p style="font-size:13px;margin-top:8px">Independent tool. Not affiliated with IRCC or the Government of Canada.</p>
 <p style="font-size:13px;margin-top:4px">Free. No account needed to simulate. The answers you type are not stored.</p>
 </div></header>
-<div id="mobileScore" aria-live="polite"><span>Estimated CRS <span id="mobileScoreVal">496</span></span><span id="mobileScoreGap"></span></div>
+<div id="mobileScore" aria-live="polite"><span>Estimated CRS <span id="mobileScoreVal">0</span></span><span id="mobileScoreGap"></span></div>
 <main>
 <div id="printHead"><h1>Canada Immigration Tool: CRS report</h1><p>Independent planning estimate. Not affiliated with IRCC or the Government of Canada. Your official score is the one IRCC calculates inside your Express Entry profile.</p></div>
 <section class="card" id="introCard" aria-label="How this works">
@@ -85,9 +85,6 @@ ol.howto{margin:6px 0 0 18px} ol.howto li{margin:6px 0}
 <div class="grid">
 <section class="card" aria-label="Your profile">
 <h2>Your profile: 4 short steps</h2>
-<div class="banner" id="sampleBanner"><b>This form starts with a sample profile</b> so you can see a full result right away. It is not your data, and its score is not your score.<br>
-<button type="button" id="blankBtn">Clear it and start with my own details</button>
-<button type="button" class="alt" id="keepSampleBtn">Keep the sample and edit it</button></div>
 <nav class="steps" aria-label="Profile steps">
 <button type="button" data-goto="1">1. Profile</button><button type="button" data-goto="2">2. Language</button><button type="button" data-goto="3">3. Work</button><button type="button" data-goto="4">4. Extras and dates</button>
 </nav>
@@ -97,7 +94,7 @@ ol.howto{margin:6px 0 0 18px} ol.howto li{margin:6px 0}
 <h3 class="stephead" id="step1">Step 1 of 4: Profile</h3>
 <p class="help">The basics. Age points are highest from 20 to 29 and fall every year after that.</p>
 <div class="row">
-<div><label for="age">Age</label><input id="age" type="number" step="1" min="17" max="60" value="28"></div>
+<div><label for="age">Age</label><input id="age" type="number" step="1" min="17" max="60" value="" placeholder="e.g. 29"></div>
 <div><label for="marital">Marital status</label><select id="marital"><option value="single" selected>Single / never married</option><option value="married_nonacc">Married / common-law, spouse NOT accompanying</option><option value="married_acc">Married / common-law, spouse accompanying</option></select></div>
 </div>
 <div id="spouseBlock" style="display:none;border:1px dashed var(--field-border);border-radius:8px;padding:10px;margin-top:10px">
@@ -117,10 +114,10 @@ ol.howto{margin:6px 0 0 18px} ol.howto li{margin:6px 0}
 <label for="education">Highest education (with ECA if foreign)</label>
 <p class="help">ECA is an Educational Credential Assessment. For a foreign degree, pick the level your ECA report confirms, not the level on the diploma alone.</p>
 <select id="education">
-<option value="none">Less than high school</option><option value="hs">High school</option>
+<option value="none" selected>Less than high school</option><option value="hs">High school</option>
 <option value="one">One-year postsecondary</option><option value="two">Two-year postsecondary</option>
 <option value="bachelor">Bachelor degree (3+ years)</option><option value="twoplus">Two or more credentials (one 3+ years)</option>
-<option value="master" selected>Master degree / professional degree</option><option value="phd">PhD</option>
+<option value="master">Master degree / professional degree</option><option value="phd">PhD</option>
 </select>
 </div>
 <div class="stepPanel" id="panel2">
@@ -139,12 +136,13 @@ ol.howto{margin:6px 0 0 18px} ol.howto li{margin:6px 0}
 <p class="note">Pick your test and enter your raw scores for each skill. The tool converts them to CLB / NCLC using IRCC's official equivalency charts, then scores them. Conversions verified November 15, 2026.</p>
 <label>First language test scores</label>
 <div class="row4">
-<div><label for="langL">Listening</label><input id="langL" type="number" step="1" min="0" max="12" value="9"></div>
-<div><label for="langR">Reading</label><input id="langR" type="number" step="1" min="0" max="12" value="9"></div>
-<div><label for="langW">Writing</label><input id="langW" type="number" step="1" min="0" max="12" value="7"></div>
-<div><label for="langS">Speaking</label><input id="langS" type="number" step="1" min="0" max="12" value="7"></div>
+<div><label for="langL">Listening</label><input id="langL" type="number" step="1" min="0" max="12" value="0"></div>
+<div><label for="langR">Reading</label><input id="langR" type="number" step="1" min="0" max="12" value="0"></div>
+<div><label for="langW">Writing</label><input id="langW" type="number" step="1" min="0" max="12" value="0"></div>
+<div><label for="langS">Speaking</label><input id="langS" type="number" step="1" min="0" max="12" value="0"></div>
 </div>
 <p class="note">Enter the scores exactly as they appear on your test report. The converter above handles the rest.</p>
+<p class="note" id="clbReadout"></p>
 <label>Second official language scores, if any (CLB per skill)</label>
 <div class="row4">
 <div><label for="lang2L">Listening</label><input id="lang2L" type="number" step="1" min="0" max="12" value="0"></div>
@@ -157,8 +155,8 @@ ol.howto{margin:6px 0 0 18px} ol.howto li{margin:6px 0}
 <h3 class="stephead" id="step3">Step 3 of 4: Work</h3>
 <p class="help">Skilled work means jobs in TEER 0, 1, 2 or 3 of the National Occupational Classification.</p>
 <div class="row">
-<div><label for="canWork">Canadian skilled work (years)</label><select id="canWork"><option value="0">None</option><option value="1" selected>1 year</option><option value="2">2 years</option><option value="3">3 years</option><option value="4">4 years</option><option value="5">5+ years</option></select></div>
-<div><label for="foreignWork">Foreign skilled work (years)</label><select id="foreignWork"><option value="0">None</option><option value="1">1 to 2 years</option><option value="3" selected>3+ years</option></select></div>
+<div><label for="canWork">Canadian skilled work (years)</label><select id="canWork"><option value="0" selected>None</option><option value="1">1 year</option><option value="2">2 years</option><option value="3">3 years</option><option value="4">4 years</option><option value="5">5+ years</option></select></div>
+<div><label for="foreignWork">Foreign skilled work (years)</label><select id="foreignWork"><option value="0" selected>None</option><option value="1">1 to 2 years</option><option value="3">3+ years</option></select></div>
 </div>
 <p class="note">Optional exact work entry. If you fill in months, it overrides the years dropdowns above. Part time is pro-rated, full time counts as 30 hours a week, and only completed full-time-equivalent years count, the way IRCC counts them.</p>
 <div class="row4">
@@ -176,11 +174,11 @@ ol.howto{margin:6px 0 0 18px} ol.howto li{margin:6px 0}
 </div>
 <div class="stepPanel" id="panel4">
 <h3 class="stephead" id="step4">Step 4 of 4: Extras and dates</h3>
-<p class="help">Bonuses, your job category, and the dates that drive your countdowns.</p>
+<p class="help">Bonuses, your job category, and the dates that drive your countdowns. Leave anything that does not apply to you at No or blank. Blank dates are simply left out of the countdowns.</p>
 <div class="row">
-<div><label for="canEdu">Canadian postsecondary credential</label><select id="canEdu"><option value="0">None</option><option value="15" selected>1 to 2 years (15 pts)</option><option value="30">3+ years (30 pts)</option></select></div>
+<div><label for="canEdu">Canadian postsecondary credential</label><select id="canEdu"><option value="0" selected>None</option><option value="15">1 to 2 years (15 pts)</option><option value="30">3+ years (30 pts)</option></select></div>
 <div><label for="nocTeer">Your NOC TEER category</label>
-<p class="help">TEER is the skill level inside your job's NOC code. TEER 2 or 3 covers most trades, technical and health support jobs.</p><select id="nocTeer"><option value="1">TEER 0 / 1</option><option value="2" selected>TEER 2 / 3</option><option value="4">TEER 4 / 5</option></select></div>
+<p class="help">TEER is the skill level inside your job's NOC code. TEER 2 or 3 covers most trades, technical and health support jobs.</p><select id="nocTeer"><option value="" selected>Choose your TEER category</option><option value="1">TEER 0 / 1</option><option value="2">TEER 2 / 3</option><option value="4">TEER 4 / 5</option></select></div>
 </div>
 <div class="row">
 <div><label for="frenchNCLC">French at NCLC 7+ in all four skills</label><select id="frenchNCLC"><option value="0" selected>No</option><option value="1">Yes (bonus tier set automatically from your first language scores)</option></select></div>
@@ -192,30 +190,34 @@ ol.howto{margin:6px 0 0 18px} ol.howto li{margin:6px 0}
 <p class="help">Since November 3, 2026, IRCC counts either your work route or a listed high-wage offer, whichever is higher. The two no longer add together.</p><select id="offer"><option value="0" selected>No offer / occupation not listed</option><option value="50">Listed at 1.3x median (50 pts)</option><option value="70">Listed at 1.5x median (70 pts)</option><option value="100">Listed at 2x median (100 pts)</option></select></div>
 </div>
 <div class="row">
-<div><label for="relocate">Willing to relocate for RCIP / PNP</label><select id="relocate"><option value="yes" selected>Yes</option><option value="no">No</option></select></div>
-<div><label for="testDate">Next / last language test date</label><input id="testDate" type="date" value="2026-12-19"></div>
+<div><label for="relocate">Willing to relocate for RCIP / PNP</label>
+<p class="help">Only used to decide whether rural and provincial routes are suggested to you.</p><select id="relocate"><option value="yes" selected>Yes</option><option value="no">No</option></select></div>
+<div><label for="testDate">Next / last language test date</label><input id="testDate" type="date" value=""></div>
 </div>
 <div class="row">
-<div><label for="permitDate">Work permit expiry (if any)</label><input id="permitDate" type="date" value="2029-01-28"></div>
-<div><label for="funds">Settlement funds available (CAD)</label><input id="funds" type="number" min="0" step="500" value="15000"></div>
+<div><label for="permitDate">Work permit expiry (if any)</label><input id="permitDate" type="date" value=""></div>
+<div><label for="funds">Settlement funds available (CAD)</label><input id="funds" type="number" min="0" step="500" value=""></div>
 </div>
 </div>
 <div class="wiznav">
 <button type="button" class="alt" id="wizBack">Back</button>
 <button type="button" id="wizNext">Continue</button>
 <button type="button" class="alt" id="wizAll">Show all steps at once</button>
+<button type="button" class="alt" id="clearBtn">Clear the form</button>
 </div>
 </section>
 <section class="card" aria-label="Your result">
 <h2>Your estimated CRS score</h2>
-<div class="score" id="crsScore" aria-live="polite">496</div>
+<div class="score" id="crsScore" aria-live="polite">0</div>
 <p class="sub" id="crsGap">Out of 1,270 on the November 3, 2026 grid.</p>
-<div class="barwrap"><div class="bar"><i id="crsBar" style="width:39%"></i></div><span class="cutmark" id="cutoffMarker" style="left:40.9%"></span></div>
+<p class="note" id="scenarioNote" style="display:none"></p>
+<p class="note" id="incompleteNote" style="display:none"><b>This profile is not complete yet.</b> Add your age, your education, and at least one language score, and your recommendations, eligibility and outlook will be built from your real answers.</p>
+<div class="barwrap"><div class="bar"><i id="crsBar" style="width:0%"></i></div><span class="cutmark" id="cutoffMarker" style="left:40.9%"></span></div>
 <p class="note" id="cutoffMarkLabel">The dark line marks the last CEC cutoff.</p>
 <div class="kpis">
 <div class="kpi"><span class="sub">Last CEC cutoff</span><b id="lastCutoff">519</b><span class="small" id="lastCutoffMeta">Oct 15, 2026, 2,500 ITAs</span></div>
 <div class="kpi"><span class="sub">2026 CEC range</span><b>507 to 523</b><span class="small">18 rounds in 2026</span></div>
-<div class="kpi"><span class="sub">Gap to last cutoff</span><b id="gapKpi">23</b><span class="small">points</span></div>
+<div class="kpi"><span class="sub">Gap to last cutoff</span><b id="gapKpi">n/a</b><span class="small">points</span></div>
 </div>
 <h3>Points breakdown</h3>
 <table><tbody id="breakdown"></tbody></table>
@@ -240,7 +242,7 @@ ol.howto{margin:6px 0 0 18px} ol.howto li{margin:6px 0}
 <li><b>Additional points:</b> a provincial nomination (600), French ability, a sibling in Canada, Canadian study. Capped at 600.</li>
 </ul>
 <p class="small"><span id="rulesMeta">Rules grid effective November 3, 2026.</span> Sources: <a href="https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/check-score/crs-criteria.html" target="_blank" rel="noopener">IRCC CRS criteria</a> and <a href="https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/rounds-invitations.html" target="_blank" rel="noopener">IRCC rounds of invitations</a>. Language conversions use IRCC's official equivalency charts.</p>
-<p class="small"><b>Check us:</b> the sample profile this page opens with scores <b>496</b>. In the what-if scenarios, push "All language skills to CLB 9" and it must read <b>524</b>; CLB 10 must read <b>536</b>. Run the same details in IRCC's own calculator and compare. If your numbers ever disagree with your IRCC profile, use the mismatch report in the results card. Reports become test cases.</p>
+<p class="small"><b>Check us:</b> press <button type="button" class="alt" id="loadCheckBtn">Load the example profile</button> and the score must read <b>496</b>. The example is a documented test case: age 28, Master degree, language 9, 9, 7, 7, one year of Canadian and three years of foreign skilled work, and a 1 to 2 year Canadian credential. Then push "All language skills to CLB 9" in the scenarios and it must read <b>524</b>; CLB 10 must read <b>536</b>. Run the same details in IRCC's own calculator and compare. If your numbers ever disagree with your IRCC profile, use the mismatch report in the results card. Reports become test cases.</p>
 </section>
 <section class="card" aria-label="Eligibility">
 <h2>Pathway eligibility</h2>
@@ -285,8 +287,8 @@ ol.howto{margin:6px 0 0 18px} ol.howto li{margin:6px 0}
 <table><thead><tr><th>Round type</th><th>Rounds</th><th>Cutoff range</th><th>Latest on record</th></tr></thead>
 <tbody>
 <tr><td>Canadian Experience Class</td><td>18</td><td>507 to 523</td><td>Oct 15, 2026: 519, 2,500 ITAs</td></tr>
-<tr><td>Provincial Nominee Program</td><td></td><td>697 to 805</td><td></td></tr>
-<tr><td>French language</td><td></td><td>382 to 435</td><td></td></tr>
+<tr><td>Provincial Nominee Program</td><td></td><td>697 to 805</td><td>Varies by round, see the IRCC rounds page</td></tr>
+<tr><td>French language</td><td></td><td>382 to 435</td><td>Varies by round, see the IRCC rounds page</td></tr>
 <tr><td>Category draws (trades, transport, healthcare, others)</td><td></td><td>169 to 477</td><td>Oct 28, 2026: Transport, 477, 150 ITAs</td></tr>
 </tbody></table>
 <h3>Recent CEC rounds</h3>

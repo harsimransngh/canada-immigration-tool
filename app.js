@@ -86,7 +86,7 @@ function render(){
   if($("lastCutoffMeta")) $("lastCutoffMeta").textContent=fmtDate(LAST_CEC.date)+(LAST_CEC.itas? ", "+LAST_CEC.itas.toLocaleString("en-CA")+" ITAs" : "");
   if($("mobileScoreVal")) $("mobileScoreVal").textContent=r.total;
   if($("mobileScoreGap")) $("mobileScoreGap").textContent= gap>0 ? gap+" below last CEC cutoff" : "at or above last CEC cutoff";
-  if($("progressBar")&&typeof DEFAULTS!=="undefined"){ const changed=fields.filter(f=>{ const e=$(f); return e && DEFAULTS[f]!==undefined && e.value!==DEFAULTS[f]; }).length; $("progressBar").style.width=Math.round(changed/fields.length*100)+"%"; if($("progressText")) $("progressText").textContent="Your score updates live as you fill the form. You have adjusted "+changed+" of "+fields.length+" fields from the sample profile. Nothing is saved unless you create an account below."; }
+  if($("progressBar")&&typeof DEFAULTS!=="undefined"){ const PB=(typeof window!=="undefined"&&window.PROGRESS_BASE)?window.PROGRESS_BASE:DEFAULTS; const changed=fields.filter(f=>{ const e=$(f); return e && PB[f]!==undefined && e.value!==PB[f]; }).length; $("progressBar").style.width=Math.round(changed/fields.length*100)+"%"; if($("progressText")) $("progressText").textContent= (typeof window!=="undefined"&&window.__USING_SAMPLE===false) ? "Your score updates live as you fill the form. You have answered "+changed+" of "+fields.length+" fields. Nothing is saved unless you create an account below." : "Your score updates live as you fill the form. You have adjusted "+changed+" of "+fields.length+" fields from the sample profile. Nothing is saved unless you create an account below."; }
   $("breakdown").innerHTML=
    ((val("langTest")&&val("langTest")!=="clb")? "<tr><td>Converted to CLB / NCLC (L, R, W, S)</td><td>"+r.scores.join(", ")+"</td></tr>" : "")+
    "<tr><td>Age</td><td>"+r.coreAge+"</td></tr>"+
@@ -111,7 +111,7 @@ function render(){
     ["Provincial nomination", compute({pnp:600}).total],
     ["French to NCLC 7+ (with CLB 5+ first language)", compute({french:50}).total]
   ];
-  $("scenarios").innerHTML=sc.map(x=>"<p class='small'><b>"+x[0]+":</b> "+x[1]+" ("+(x[1]-base.total>=0?"+":"")+(x[1]-base.total)+" vs today)</p>").join("");
+  $("scenarios").innerHTML=sc.map(x=>"<p class='small'><b>"+x[0]+":</b> "+x[1]+" ("+(x[1]-base.total>=0?"+":"")+(x[1]-base.total)+" vs your entered profile)</p>").join("");
   const rows=[];
   const teer=val("nocTeer"); const cecLangOk = teer==="1"? r.allCLB7 : (teer==="2"? r.allCLB5 : false);
   const cec = r.canY>=1 && cecLangOk;
@@ -166,7 +166,7 @@ document.querySelectorAll("[data-scenario]").forEach(b=>b.addEventListener("clic
 }));
 render();
 
-if($("drawsTable")){ $("drawsTable").innerHTML=DRAWS.cec.map(x=>"<tr><td>"+fmtDate(x.date)+"</td><td>"+(x.round? "#"+x.round : "")+"</td><td>"+x.cutoff+"</td><td>"+(x.itas? x.itas.toLocaleString("en-CA") : "")+"</td></tr>").join(""); }
+if($("drawsTable")){ $("drawsTable").innerHTML=DRAWS.cec.map(x=>"<tr><td>"+fmtDate(x.date)+"</td><td>"+(x.round? "#"+x.round : "n/a")+"</td><td>"+x.cutoff+"</td><td>"+(x.itas? x.itas.toLocaleString("en-CA") : "n/a")+"</td></tr>").join(""); }
 if($("drawsNote")){ $("drawsNote").textContent="Source: IRCC rounds of invitations, checked "+fmtDate(DRAWS.updated)+". "+(DRAWS.status||"")+" No general all-program draws have been held since April 2024."; }
 if($("printBtn")){ $("printBtn").addEventListener("click",()=>{ trackEv("print_report",{}); window.print(); }); }
 
@@ -196,7 +196,7 @@ document.querySelectorAll("[data-goto]").forEach(b => b.addEventListener("click"
 if ($("wizBack")) $("wizBack").addEventListener("click", () => showStep(wizStep - 1));
 if ($("wizNext")) $("wizNext").addEventListener("click", () => {
   if (wizStep < 4) { showStep(wizStep + 1); return; }
-  try { const r = document.querySelector('section[aria-label="Your result"]'); if (r) r.scrollIntoView({ behavior: "smooth", block: "start" }); } catch (e) {}
+  try { const r = $("crsScore"); if (r) r.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) {}
 });
 if ($("wizAll")) $("wizAll").addEventListener("click", () => {
   wizAll = !wizAll;
@@ -205,7 +205,7 @@ if ($("wizAll")) $("wizAll").addEventListener("click", () => {
   if ($("wizBack")) $("wizBack").style.display = wizAll ? "none" : "";
   if ($("wizNext")) $("wizNext").style.display = wizAll ? "none" : "";
 });
-const BLANK = { age: "", marital: "single", spouseEdu: "0", spouseLangL: "0", spouseLangR: "0", spouseLangW: "0", spouseLangS: "0", spouseCanWork: "0", education: "none", langTest: "clb", langL: "0", langR: "0", langW: "0", langS: "0", lang2L: "0", lang2R: "0", lang2W: "0", lang2S: "0", canWork: "0", foreignWork: "0", canWorkMonths: "", canWorkHours: "", foreignWorkMonths: "", foreignWorkHours: "", wageBonus: "0", certQual: "0", canEdu: "0", nocTeer: "2", frenchNCLC: "0", sibling: "0", pnp: "0", offer: "0", relocate: "yes", testDate: "", permitDate: "", funds: "" };
+const BLANK = { age: "", marital: "single", spouseEdu: "0", spouseLangL: "0", spouseLangR: "0", spouseLangW: "0", spouseLangS: "0", spouseCanWork: "0", education: "none", langTest: "clb", langL: "0", langR: "0", langW: "0", langS: "0", lang2L: "0", lang2R: "0", lang2W: "0", lang2S: "0", canWork: "0", foreignWork: "0", canWorkMonths: "", canWorkHours: "", foreignWorkMonths: "", foreignWorkHours: "", wageBonus: "0", certQual: "0", canEdu: "0", nocTeer: "", frenchNCLC: "0", sibling: "0", pnp: "0", offer: "0", relocate: "yes", testDate: "", permitDate: "", funds: "" };
 if ($("blankBtn")) $("blankBtn").addEventListener("click", () => {
   Object.keys(BLANK).forEach(k => { if ($(k)) $(k).value = BLANK[k]; });
   scenario = {}; syncSpouseBlock(); applyTestUI(); render(); showStep(1);
@@ -216,3 +216,58 @@ const cmEl = $("cutoffMarker"); if (cmEl) cmEl.style.left = (LAST_CEC.cutoff / R
 const cmlEl = $("cutoffMarkLabel"); if (cmlEl) cmlEl.textContent = "The dark line marks the last CEC cutoff: " + LAST_CEC.cutoff + " (" + fmtDate(LAST_CEC.date) + ").";
 const rmEl = $("rulesMeta"); if (rmEl) rmEl.textContent = "Rules grid effective " + fmtDate(R.meta.effective) + ". Last verified against IRCC on " + fmtDate(R.meta.verified) + ".";
 showStep(1);
+
+// ---- Walkthrough fixes: preview label, CLB readout, incomplete flag, check profile ----
+window.__USING_SAMPLE = false;
+const __origRender = render;
+render = function () {
+  __origRender();
+  try {
+    const sn = $("scenarioNote");
+    if (sn) {
+      const has = Object.keys(scenario).length > 0;
+      sn.style.display = has ? "" : "none";
+      if (has) sn.innerHTML = "You are previewing a what-if scenario. Your entered profile scores <b>" + compute({}).total + "</b>. The scenarios list compares against your entered profile, and Reset scenarios returns to it.";
+    }
+    const cr = $("clbReadout");
+    if (cr) {
+      const t = val("langTest"); const rr = compute(scenario);
+      cr.textContent = t === "clb" ? "You are entering CLB levels directly." : t === "celpip" ? "CELPIP scores are the CLB levels themselves, no conversion needed." : ("Your entries convert to CLB / NCLC: Listening " + rr.scores[0] + ", Reading " + rr.scores[1] + ", Writing " + rr.scores[2] + ", Speaking " + rr.scores[3] + ".");
+    }
+    const inc = $("incompleteNote");
+    const hasInput = (parseFloat(val("age")) >= 17) && val("education") !== "none" && ["langL", "langR", "langW", "langS"].some(id => parseFloat(val(id)) > 0);
+    if (inc) inc.style.display = hasInput ? "none" : "";
+    const tag = $("sampleTag");
+    if (tag) { const bn = $("sampleBanner"); tag.style.display = (bn && bn.style.display !== "none") ? "" : "none"; }
+    if (!hasInput) {
+      if ($("crsGap")) $("crsGap").textContent = "Out of 1,270 on the November 3, 2026 grid. Add your details to see where you stand.";
+      if ($("gapKpi")) $("gapKpi").textContent = "n/a";
+      if ($("mobileScoreGap")) $("mobileScoreGap").textContent = "profile incomplete";
+      const el = $("eligibility"); if (el) el.innerHTML = "<tr><td colspan='3'>Add your age, education and at least one language score to see your pathway eligibility.</td></tr>";
+      const rec = $("recommendations"); if (rec) rec.innerHTML = "<li>Add your age, education and at least one language score, and your ranked recommendations will appear here.</li>";
+      const ol = $("outlook"); if (ol) ol.innerHTML = "<p class='small'>Add your age, education and at least one language score in the form, and your outlook will be built from your answers.</p>";
+      const cdEl = $("countdowns"); if (cdEl) cdEl.innerHTML = "<li>Add your test and permit dates in step 4 to see your countdowns.</li>";
+      const sc = $("scenarios"); if (sc) sc.innerHTML = "<p class='small'>Scenarios unlock once your profile has an age, an education and a language score.</p>";
+      document.querySelectorAll("[data-scenario]").forEach(b => { b.disabled = true; });
+    } else {
+      document.querySelectorAll("[data-scenario]").forEach(b => { b.disabled = false; });
+    }
+  } catch (e) { /* display helpers must never break rendering */ }
+};
+const __blankBtn = $("blankBtn");
+if (__blankBtn) __blankBtn.addEventListener("click", () => { window.__USING_SAMPLE = false; window.PROGRESS_BASE = Object.assign({}, BLANK); render(); });
+const CHECK_PROFILE = { age: "28", marital: "single", spouseEdu: "0", spouseLangL: "0", spouseLangR: "0", spouseLangW: "0", spouseLangS: "0", spouseCanWork: "0", education: "master", langTest: "clb", langL: "9", langR: "9", langW: "7", langS: "7", lang2L: "0", lang2R: "0", lang2W: "0", lang2S: "0", canWork: "1", foreignWork: "3", canWorkMonths: "", canWorkHours: "", foreignWorkMonths: "", foreignWorkHours: "", wageBonus: "0", certQual: "0", canEdu: "15", nocTeer: "2", frenchNCLC: "0", sibling: "0", pnp: "0", offer: "0", relocate: "yes", testDate: "", permitDate: "", funds: "" };
+if ($("loadCheckBtn")) $("loadCheckBtn").addEventListener("click", () => {
+  fields.forEach(f => { if ($(f) && CHECK_PROFILE[f] !== undefined) $(f).value = CHECK_PROFILE[f]; });
+  scenario = {}; window.__USING_SAMPLE = true; window.PROGRESS_BASE = CHECK_PROFILE;
+  syncSpouseBlock(); applyTestUI(); render(); showStep(1);
+  try { $("crsScore").scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) {}
+});
+render();
+
+// ---- Clear form (page now opens blank; nothing is preseeded) ----
+if ($("clearBtn")) $("clearBtn").addEventListener("click", () => {
+  Object.keys(BLANK).forEach(k => { if ($(k)) $(k).value = BLANK[k]; });
+  scenario = {}; window.__USING_SAMPLE = false; window.PROGRESS_BASE = Object.assign({}, BLANK);
+  syncSpouseBlock(); applyTestUI(); render(); showStep(1);
+});
